@@ -13,8 +13,8 @@
             --creator-gradient-end: #051630;
             
             --surface-color: rgba(30, 30, 34, 0.95);
-            --card-bg: #d3b212; /* Sárga a privát jegyzeteknek */
-            --card-shared-bg: #b6ff1e; /* Új lime zöld szín a megosztott jegyzeteknek */
+            --card-bg: #d3b212;
+            --card-shared-bg: #b6ff1e;
             --text-main: #f1f3f4;
             --text-dark: #202124;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -30,11 +30,28 @@
             margin: 0; color: var(--text-main); min-height: 100vh;
         }
 
+        /* --- HEADER & RESZPONZIVITÁS --- */
         header {
             background: var(--surface-color); padding: 15px 30px;
             display: flex; align-items: center; justify-content: space-between;
             backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color);
             position: sticky; top: 0; z-index: 100;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .user-email-text { font-size: 13px; color: var(--text-muted); }
+
+        /* Mobil nézet optimalizálása */
+        @media (max-width: 650px) {
+            .app-title { display: none !important; }
+            .header-right { width: 100%; justify-content: space-between !important; gap: 8px !important; }
+            header { padding: 12px 15px; }
+            .user-email-text { 
+                max-width: 140px; 
+                white-space: nowrap; 
+                overflow: hidden; 
+                text-overflow: ellipsis; 
+            }
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
@@ -95,11 +112,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative;
         }
         
-        /* ÚJ: Megosztott kártya színe */
-        .note-card.shared {
-            background: var(--card-shared-bg);
-        }
-
+        .note-card.shared { background: var(--card-shared-bg); }
         .note-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
         .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; line-height: 1.3;}
         
@@ -206,9 +219,9 @@
 
     <div id="app-container" class="hidden">
         <header>
-            <div style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span id="user-mail" style="font-size: 13px; color: var(--text-muted)"></span>
+            <div class="app-title" style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
+            <div class="header-right">
+                <span id="user-mail" class="user-email-text"></span>
                 <button onclick="openFriendsModal()" class="btn" style="background:rgba(255,255,255,0.1); color:white; position: relative;">
                     👥 Barátok
                     <span id="req-badge" class="hidden" style="position: absolute; top:-5px; right:-5px; background:var(--danger-color); color:#000; border-radius:50%; width:18px; height:18px; font-size:11px; display:flex; align-items:center; justify-content:center;">0</span>
