@@ -52,7 +52,7 @@
             background: var(--card-bg); color: var(--text-dark);
             border-radius: 10px; padding: 18px; margin-bottom: 15px;
             break-inside: avoid; cursor: pointer; transition: transform 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative;
         }
         .note-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
         .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; line-height: 1.3;}
@@ -62,10 +62,9 @@
             border-radius: 8px; color: #202124; margin-bottom: 10px; display: inline-block; font-weight: bold;
         }
 
-        /* Megnövelt előnézeti terület stílusa */
         .preview-content {
             font-size: 0.95rem; opacity: 0.85; line-height: 1.5;
-            display: -webkit-box; -webkit-line-clamp: 6; /* Max 6 sor */
+            display: -webkit-box; -webkit-line-clamp: 6; 
             -webkit-box-orient: vertical; overflow: hidden;
         }
         .preview-list-item { margin-bottom: 4px; display: flex; gap: 6px; }
@@ -82,10 +81,16 @@
             border-radius: 15px; padding: 25px; overflow-y: auto; position: relative;
             display: flex; flex-direction: column;
         }
+        
+        /* Új Modal stílusok a barátoknak és megosztásnak (sötét téma) */
+        .modal-content.dark-modal {
+            background: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color);
+        }
 
         .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .close-modal { font-size: 28px; cursor: pointer; font-weight: bold; }
         .close-modal:hover { color: #555; }
+        .dark-modal .close-modal:hover { color: #fff; }
 
         .rich-editor { min-height: 80px; outline: none; margin-bottom: 15px; line-height: 1.6; }
         .list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -96,10 +101,7 @@
         .money-total { border-top: 2px solid rgba(0,0,0,0.2); margin-top: 15px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
 
         .history-section { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.3); font-size: 0.85rem; }
-        .history-item { 
-            margin-bottom: 8px; color: #333; cursor: pointer; 
-            padding: 5px; border-radius: 4px; transition: background 0.2s;
-        }
+        .history-item { margin-bottom: 8px; color: #333; cursor: pointer; padding: 5px; border-radius: 4px; transition: background 0.2s; }
         .history-item:hover { background: rgba(0,0,0,0.05); }
 
         .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s;}
@@ -115,17 +117,29 @@
         
         .modal-content.view-mode #modal-toolbar { display: none; }
         .modal-content.edit-mode #modal-toolbar { display: flex; }
-        
         .edit-mode .read-only { display: none; }
         .view-mode .edit-only { display: none; }
-
         .hidden { display: none !important; }
 
-        /* Időgép banner */
-        #history-banner {
-            background: #fbbc04; color: #000; padding: 10px; border-radius: 8px;
-            margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+        #history-banner { background: #fbbc04; color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Kártya megosztás gomb (gyorselérés) */
+        .card-share-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.1);
+            border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 14px;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
+        .card-share-btn:hover { background: rgba(0,0,0,0.3); color: white; }
+
+        /* Barátok Lista Dizájn */
+        .friend-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px;
+        }
+        .friend-btn { background: rgba(255,255,255,0.1); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: none; text-align: left; transition: 0.2s; }
+        .friend-btn:hover { background: rgba(255,255,255,0.2); }
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        @media (max-width: 500px) { .share-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -143,8 +157,12 @@
     <div id="app-container" class="hidden">
         <header>
             <div style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
-            <div>
-                <span id="user-mail" style="font-size: 13px; margin-right: 15px;"></span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="user-mail" style="font-size: 13px; color: var(--text-muted)"></span>
+                <button onclick="openFriendsModal()" class="btn" style="background:rgba(255,255,255,0.1); color:white; position: relative;">
+                    👥 Barátok
+                    <span id="req-badge" class="hidden" style="position: absolute; top:-5px; right:-5px; background:var(--danger-color); color:#000; border-radius:50%; width:18px; height:18px; font-size:11px; display:flex; align-items:center; justify-content:center;">0</span>
+                </button>
                 <button onclick="logout()" class="btn" style="background:#3c4043; color:white; font-size:12px;">Kijelentkezés</button>
             </div>
         </header>
@@ -192,7 +210,7 @@
 
             <div class="modal-header">
                 <h2 id="modal-title" style="margin:0; outline:none; flex:1;"></h2>
-                <span class="close-modal" onclick="closeModal()">×</span>
+                <span class="close-modal" onclick="closeModal('note-modal')">×</span>
             </div>
             
             <div id="modal-body">
@@ -201,7 +219,6 @@
                     <button onclick="document.execCommand('underline')"><u>Aláhúzott</u></button>
                     <input type="color" onchange="document.execCommand('foreColor', false, this.value)" value="#202124" title="Szöveg Színe">
                 </div>
-
                 <div id="modal-content-display" class="rich-editor"></div>
             </div>
 
@@ -220,9 +237,59 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="friends-modal">
+        <div class="modal-content dark-modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 style="margin:0; color:var(--accent-color);">👥 Barátok</h2>
+                <span class="close-modal" onclick="closeModal('friends-modal')">×</span>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h4 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom:5px;">Új barát felvétele</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="email" id="add-friend-email" placeholder="Barát e-mail címe..." style="background:rgba(0,0,0,0.3); border:none; padding:10px; border-radius:6px; color:white; flex:1; margin:0;">
+                    <button onclick="sendFriendRequest()" class="btn btn-primary">Küldés</button>
+                </div>
+            </div>
+
+            <div id="incoming-requests-section" class="hidden" style="margin-bottom: 25px;">
+                <h4 style="color:var(--danger-color); border-bottom: 1px solid var(--border-color); padding-bottom:5px;">Függőben lévő kérelmek</h4>
+                <div id="requests-list"></div>
+            </div>
+
+            <div>
+                <h4 style="border-bottom: 1px solid var(--border-color); padding-bottom:5px;">Barátlistám</h4>
+                <div id="friends-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="share-modal">
+        <div class="modal-content dark-modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 style="margin:0; color:var(--accent-color);">👤 Jegyzet megosztása</h2>
+                <span class="close-modal" onclick="closeModal('share-modal')">×</span>
+            </div>
+            
+            <div id="share-friends-section">
+                <p style="margin-top:0; font-size:14px; opacity:0.8;">Oszd meg egy kattintással a barátaiddal:</p>
+                <div class="share-grid" id="share-friends-grid">
+                    </div>
+            </div>
+
+            <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <p style="margin-top:0; font-size:14px; opacity:0.8;">Vagy oszd meg e-mail cím alapján (Ha nem barátod, engedélyt fog kapni):</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="email" id="share-email-input" placeholder="E-mail cím..." style="background:rgba(0,0,0,0.3); border:none; padding:10px; border-radius:6px; color:white; flex:1; margin:0;">
+                    <button onclick="executeShare(document.getElementById('share-email-input').value)" class="btn btn-primary">Megosztás</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, arrayUnion, arrayRemove, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -242,9 +309,14 @@
         let creatorType = 'text';       
         let currentModalType = 'text';  
         let currentNoteId = null;
+        let currentShareNoteId = null;
         
         let myNotesMap = new Map();
         let sharedNotesMap = new Map();
+        
+        // Barát rendszer változók
+        let myFriends = [];
+        let incomingRequests = [];
 
         // --- AUTH ---
         window.logout = () => signOut(auth);
@@ -272,13 +344,14 @@
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('user-mail').innerText = u.email;
                 initApp();
+                initFriendsSystem();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        // --- TÍPUS KEZELÉS ---
+        // --- TÍPUS KEZELÉS (Közös) ---
         window.setCreatorType = (type, btn) => {
             creatorType = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -290,7 +363,7 @@
             
             if(type === 'text') {
                 document.getElementById('text-creator').classList.remove('hidden');
-                document.getElementById('creator-toolbar').classList.remove('hidden'); // Formázó sáv mutatása
+                document.getElementById('creator-toolbar').classList.remove('hidden');
             } else {
                 document.getElementById('list-creator').classList.remove('hidden');
                 document.getElementById('list-items-container').innerHTML = '';
@@ -315,7 +388,7 @@
             else container.appendChild(div);
         };
 
-        // --- ÚJ JEGYZET MENTÉSE (Állapot mentéssel a historyba) ---
+        // --- ÚJ JEGYZET MENTÉSE ---
         document.getElementById('save-note').onclick = async () => {
             const title = document.getElementById('new-title').value;
             let content = "";
@@ -339,7 +412,6 @@
                 if(!title && items.length === 0) return;
             }
 
-            // Snapshot mentése a történelemhez
             const snapshotState = { title: title, content: content, items: items };
 
             const noteData = {
@@ -357,7 +429,130 @@
             if(creatorType !== 'text') addListItem('list-items-container', 'creator');
         };
 
-        // --- RENDERELÉS & ELŐNÉZET ---
+        // --- BARÁT RENDSZER LOGIKA ---
+        function initFriendsSystem() {
+            // Saját barátlista figyelése
+            onSnapshot(doc(db, "users", user.email), docSnap => {
+                if(docSnap.exists()) {
+                    myFriends = docSnap.data().friends || [];
+                    renderFriendsUI();
+                } else {
+                    setDoc(doc(db, "users", user.email), {friends:[]});
+                }
+            });
+
+            // Beérkező baráti kérelmek figyelése
+            const reqQuery = query(collection(db, "friendRequests"), where("to", "==", user.email));
+            onSnapshot(reqQuery, snap => {
+                incomingRequests = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                
+                const badge = document.getElementById('req-badge');
+                if(incomingRequests.length > 0) {
+                    badge.innerText = incomingRequests.length;
+                    badge.classList.remove('hidden');
+                    document.getElementById('incoming-requests-section').classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                    document.getElementById('incoming-requests-section').classList.add('hidden');
+                }
+                renderFriendsUI();
+            });
+        }
+
+        function renderFriendsUI() {
+            // Barátlista renderelése
+            const fList = document.getElementById('friends-list');
+            if(myFriends.length === 0) {
+                fList.innerHTML = `<div style="opacity:0.6; font-size:14px;">Még nincsenek barátaid. Küldj meghívót fent!</div>`;
+            } else {
+                fList.innerHTML = myFriends.map(f => `
+                    <div class="friend-row">
+                        <span>${f}</span>
+                        <button onclick="removeFriend('${f}')" class="btn" style="background:transparent; color:var(--danger-color); padding:5px;">✕ Törlés</button>
+                    </div>
+                `).join('');
+            }
+
+            // Kérelmek renderelése
+            const rList = document.getElementById('requests-list');
+            rList.innerHTML = incomingRequests.map(req => `
+                <div class="friend-row" style="background:rgba(242, 139, 130, 0.1);">
+                    <span><b>${req.from}</b> barátnak jelölt</span>
+                    <div>
+                        <button onclick="acceptFriendRequest('${req.id}', '${req.from}')" class="btn btn-save" style="margin-top:0; padding:5px 10px;">✔</button>
+                        <button onclick="declineFriendRequest('${req.id}')" class="btn" style="background:#555; color:white; padding:5px 10px;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openFriendsModal = () => document.getElementById('friends-modal').style.display = 'flex';
+        
+        window.sendFriendRequest = async () => {
+            const email = document.getElementById('add-friend-email').value.trim();
+            if(!email || email === user.email) return;
+            if(myFriends.includes(email)) return alert("Ő már a barátod!");
+            
+            await addDoc(collection(db, "friendRequests"), { from: user.email, to: email });
+            document.getElementById('add-friend-email').value = '';
+            alert("Baráti kérelem elküldve!");
+        };
+
+        window.acceptFriendRequest = async (reqId, fromEmail) => {
+            // Kölcsönös hozzáadás
+            await updateDoc(doc(db, "users", user.email), { friends: arrayUnion(fromEmail) });
+            await updateDoc(doc(db, "users", fromEmail), { friends: arrayUnion(user.email) });
+            await deleteDoc(doc(db, "friendRequests", reqId));
+        };
+
+        window.declineFriendRequest = async (reqId) => {
+            await deleteDoc(doc(db, "friendRequests", reqId));
+        };
+
+        window.removeFriend = async (friendEmail) => {
+            if(confirm(`Biztosan törlöd ${friendEmail}-t a barátaid közül?`)) {
+                await updateDoc(doc(db, "users", user.email), { friends: arrayRemove(friendEmail) });
+                await updateDoc(doc(db, "users", friendEmail), { friends: arrayRemove(user.email) });
+            }
+        };
+
+        // --- MEGOSZTÁS LOGIKA (Új ablak) ---
+        window.openShareModal = (noteId, event) => {
+            if(event) event.stopPropagation(); // Ne nyissa meg a jegyzetet, ha a gombra kattint
+            currentShareNoteId = noteId;
+            document.getElementById('share-email-input').value = '';
+            
+            const grid = document.getElementById('share-friends-grid');
+            if(myFriends.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1 / -1; opacity:0.6; font-size:14px;">Nincsenek barátaid. Adj hozzá párat a Barátok menüben!</div>`;
+            } else {
+                grid.innerHTML = myFriends.map(f => `
+                    <button class="friend-btn" onclick="executeShare('${f}')">👤 ${f.split('@')[0]}</button>
+                `).join('');
+            }
+            
+            document.getElementById('share-modal').style.display = 'flex';
+        };
+
+        window.executeShare = async (targetEmail) => {
+            targetEmail = targetEmail.trim();
+            if (!targetEmail || targetEmail === user.email) return;
+
+            const noteId = currentShareNoteId;
+            
+            // Ha a listámban van, azonnal megosztódik
+            if (myFriends.includes(targetEmail)) {
+                await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayUnion(targetEmail) });
+                alert(`Sikeresen megosztva vele: ${targetEmail}`);
+            } else {
+                // Ha nincs, akkor engedélykérést/meghívót küldünk a jegyzetre
+                await updateDoc(doc(db, "notes", noteId), { pendingUsers: arrayUnion(targetEmail) });
+                alert(`Meghívó elküldve neki: ${targetEmail}`);
+            }
+            closeModal('share-modal');
+        };
+
+        // --- JEGYZET RENDERELÉS ---
         function initApp() {
             const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
             const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
@@ -392,20 +587,16 @@
                 
                 let previewHtml = "";
                 
-                // NAGYOBB ELŐNÉZET LOGIKÁJA
                 if(safeType === 'text') {
-                    // Leszedjük a HTML tageket, és 150 karaktert engedünk
                     const plainText = (note.content || "").replace(/<[^>]*>?/gm, '');
                     previewHtml = plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "");
                 }
                 else if(safeType === 'checklist') {
-                    // Első 3 elem mutatása
                     const itemsToShow = safeItems.slice(0, 3);
                     previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><span>${i.checked ? '☑' : '☐'}</span> <span>${i.text}</span></div>`).join('');
                     if(safeItems.length > 3) previewHtml += `<div style="font-size: 0.8rem; margin-top:5px;">+ ${safeItems.length - 3} további elem...</div>`;
                 }
                 else {
-                    // Pénzügy: Első 3 elem + összeg
                     const sum = safeItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
                     const itemsToShow = safeItems.slice(0, 3);
                     previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><b style="width:50px">${i.amount}</b> <span>${i.text}</span></div>`).join('');
@@ -416,15 +607,16 @@
                 const badgeHtml = note.owner === user.email ? '' : `<div class="badge">👥 Tőle: ${note.owner.split('@')[0]}</div>`;
 
                 card.innerHTML = `
+                    <button class="card-share-btn" onclick="openShareModal('${note.id}', event)" title="Megosztás">👤+</button>
                     ${badgeHtml}
-                    <h3>${note.title || 'Névtelen jegyzet'}</h3>
+                    <h3 style="padding-right: 30px;">${note.title || 'Névtelen jegyzet'}</h3>
                     <div class="preview-content">${previewHtml}</div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // --- MODAL & IDŐGÉP LOGIKA ---
+        // --- MODAL & IDŐGÉP (Változatlan a korábbihoz képest) ---
         window.openNote = (id) => {
             currentNoteId = id;
             document.getElementById('history-banner').classList.add('hidden');
@@ -440,7 +632,6 @@
             container.className = 'modal-content view-mode';
         };
 
-        // Kiszervezett renderelő függvény, hogy a history-ból is tudjuk hívni
         function renderModalState(title, type, content, items, historyArr, isHistoryView = false) {
             currentModalType = type || 'text';
             const body = document.getElementById('modal-content-display');
@@ -475,12 +666,10 @@
                 }
             }
 
-            // Csak akkor frissítsük a history listát, ha nem a history nézetben vagyunk épp
             if(!isHistoryView) {
                 const hList = document.getElementById('history-list');
                 const historyData = historyArr || [];
                 if(historyData.length > 0) {
-                    // Az indexeket meg kell fordítani, mert a tömböt megfordítjuk vizuálisan
                     const totalLen = historyData.length;
                     hList.innerHTML = historyData.slice().reverse().map((h, i) => {
                         const originalIndex = totalLen - 1 - i;
@@ -503,25 +692,18 @@
                 return;
             }
 
-            // Nézet átváltása "Időgép" módba
             document.getElementById('modal-container').className = 'modal-content view-mode';
             document.getElementById('modal-actions').classList.add('hidden');
             document.getElementById('delete-btn').classList.add('hidden');
             document.getElementById('history-banner').classList.remove('hidden');
 
             renderModalState(
-                targetHistory.state.title, 
-                note.type, // Típus sosem változik
-                targetHistory.state.content, 
-                targetHistory.state.items, 
-                null, 
-                true
+                targetHistory.state.title, note.type, targetHistory.state.content, 
+                targetHistory.state.items, null, true
             );
         };
 
-        window.restoreLiveView = () => {
-            openNote(currentNoteId); // Újratölti a jelenlegi élő változatot
-        };
+        window.restoreLiveView = () => openNote(currentNoteId);
 
         window.enableEditMode = () => {
             const note = myNotesMap.get(currentNoteId) || sharedNotesMap.get(currentNoteId);
@@ -579,27 +761,23 @@
                 snapshotState.items = items;
             }
 
-            // Új snapshot hozzáadása a history-hoz
             updateData.history = arrayUnion({ 
-                user: user.email, 
-                time: Date.now(), 
-                action: 'Szerkesztve',
-                state: snapshotState
+                user: user.email, time: Date.now(), action: 'Szerkesztve', state: snapshotState
             });
 
             await updateDoc(noteRef, updateData);
-            closeModal();
+            closeModal('note-modal');
         };
 
-        window.closeModal = () => {
-            document.getElementById('note-modal').style.display = 'none';
-            currentNoteId = null;
+        window.closeModal = (modalId) => {
+            document.getElementById(modalId).style.display = 'none';
+            if(modalId === 'note-modal') currentNoteId = null;
         };
 
         window.deleteCurrentNote = async () => {
             if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
                 await deleteDoc(doc(db, "notes", currentNoteId));
-                closeModal();
+                closeModal('note-modal');
             }
         };
     </script>
