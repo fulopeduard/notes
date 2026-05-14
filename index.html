@@ -13,9 +13,9 @@
             --creator-gradient-end: rgba(0,0,0,0.2);
             
             --surface-color: rgba(30, 30, 34, 0.95);
-            /* Alapértelmezett jegyzetszínek */
-            --card-bg: #d3b212; 
-            --card-shared-bg: #b6ff1e; 
+            /* Alapértelmezett jegyzetszínek (Frissítve a kért színekre) */
+            --card-bg: #ffe359; 
+            --card-shared-bg: #bef54a; 
             
             --text-main: #f1f3f4;
             --text-dark: #202124;
@@ -501,7 +501,7 @@
         let myFriends = [];
         let incomingRequests = [];
         
-        // Témák változói (Szétbontva jegyzet és háttér szerint)
+        // Témák változói
         let noteThemes = [];
         let bgThemes = [];
         let activeNoteTheme = null; 
@@ -634,8 +634,9 @@
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
-                document.documentElement.style.setProperty('--card-bg', '#d3b212');
-                document.documentElement.style.setProperty('--card-shared-bg', '#b6ff1e');
+                // Alap színek a legújabb kérés szerint
+                document.documentElement.style.setProperty('--card-bg', '#ffe359');
+                document.documentElement.style.setProperty('--card-shared-bg', '#bef54a');
                 document.documentElement.style.setProperty('--bg-gradient-start', '#415a7e');
                 document.documentElement.style.setProperty('--bg-gradient-end', '#0a2d5e');
             }
@@ -672,14 +673,13 @@
             hideCreatorPanel();
         };
 
-        // --- FELHASZNÁLÓI PROFIL & TÉMÁK (KIBŐVÍTETT) ---
+        // --- FELHASZNÁLÓI PROFIL & TÉMÁK ---
         function initUserProfile() {
             onSnapshot(doc(db, "users", user.email), docSnap => {
                 if(docSnap.exists()) {
                     const data = docSnap.data();
                     myFriends = data.friends || [];
                     
-                    // Régi customThemes lekezelése vagy új note/bg tömbök
                     noteThemes = data.noteThemes || data.customThemes || [];
                     bgThemes = data.bgThemes || [];
                     activeNoteTheme = data.activeNoteTheme || (data.activeTheme ? {privateColor: data.activeTheme.privateColor, sharedColor: data.activeTheme.sharedColor} : null);
@@ -711,15 +711,15 @@
 
         function applyThemeToCSS() {
             const root = document.documentElement;
-            // Jegyzet témák
             if (activeNoteTheme) {
                 root.style.setProperty('--card-bg', activeNoteTheme.privateColor);
                 root.style.setProperty('--card-shared-bg', activeNoteTheme.sharedColor);
             } else {
-                root.style.setProperty('--card-bg', '#d3b212');
-                root.style.setProperty('--card-shared-bg', '#b6ff1e');
+                // Alap színek a legújabb kérés szerint
+                root.style.setProperty('--card-bg', '#ffe359');
+                root.style.setProperty('--card-shared-bg', '#bef54a');
             }
-            // Háttér témák
+            
             if (activeBgTheme) {
                 root.style.setProperty('--bg-gradient-start', activeBgTheme.bgStart);
                 root.style.setProperty('--bg-gradient-end', activeBgTheme.bgEnd);
@@ -729,7 +729,6 @@
             }
         }
 
-        // Settings navigáció
         window.openSettingsModal = () => {
             document.getElementById('settings-modal').style.display = 'flex';
             openSettingsMain();
@@ -761,7 +760,6 @@
             document.getElementById('settings-title').innerText = "➕ Új Téma";
             document.getElementById('settings-back-btn').classList.remove('hidden');
             
-            // Alaphelyzetbe állítás
             document.getElementById('new-theme-type').value = 'note';
             toggleThemeEditorType();
         };
@@ -776,21 +774,18 @@
             if(type === 'note') {
                 document.getElementById('note-theme-editor').classList.remove('hidden');
                 document.getElementById('bg-theme-editor').classList.add('hidden');
-                // Alap értékek pickerhez
-                document.getElementById('picker-private').value = activeNoteTheme ? activeNoteTheme.privateColor : '#d3b212';
-                document.getElementById('picker-shared').value = activeNoteTheme ? activeNoteTheme.sharedColor : '#b6ff1e';
+                document.getElementById('picker-private').value = activeNoteTheme ? activeNoteTheme.privateColor : '#ffe359';
+                document.getElementById('picker-shared').value = activeNoteTheme ? activeNoteTheme.sharedColor : '#bef54a';
                 updateNotePreviewColors(false);
             } else {
                 document.getElementById('note-theme-editor').classList.add('hidden');
                 document.getElementById('bg-theme-editor').classList.remove('hidden');
-                // Alap értékek bg pickerhez
                 document.getElementById('picker-bg-start').value = activeBgTheme ? activeBgTheme.bgStart : '#415a7e';
                 document.getElementById('picker-bg-end').value = activeBgTheme ? activeBgTheme.bgEnd : '#0a2d5e';
                 updateBgPreviewColors();
             }
         }
 
-        // Automatikus okos előnézet jegyzetekhez
         window.updateNotePreviewColors = (isSharedView) => {
             const pColor = document.getElementById('picker-private').value;
             const sColor = document.getElementById('picker-shared').value;
@@ -809,7 +804,6 @@
             }
         };
 
-        // Előnézet háttérhez
         window.updateBgPreviewColors = () => {
             const sColor = document.getElementById('picker-bg-start').value;
             const eColor = document.getElementById('picker-bg-end').value;
@@ -969,7 +963,7 @@
             bList.innerHTML = bListHTML;
         }
 
-        // --- BARÁT RENDSZER LOGIKA (Változatlan) ---
+        // --- BARÁT RENDSZER ---
         function renderFriendsUI() {
             const fList = document.getElementById('friends-list');
             if(myFriends.length === 0) {
