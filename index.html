@@ -6,14 +6,14 @@
     <title>CloudKeep Pro - Firebase</title>
     <style>
         :root {
-            /* Új Kék Téma Színei */
+            /* Kék Téma Színei */
             --bg-gradient-start: #415a7e;
             --bg-gradient-end: #0a2d5e;
-            --creator-gradient-start: #2a3c55; /* Kicsivel sötétebb kék */
+            --creator-gradient-start: #2a3c55;
             --creator-gradient-end: #051630;
             
-            --surface-color: rgba(30, 30, 34, 0.95); /* Header, modalok */
-            --card-bg: #d3b212; /* Jegyzetek sárga színe megmarad kontrasztnak */
+            --surface-color: rgba(30, 30, 34, 0.95);
+            --card-bg: #d3b212;
             --text-main: #f1f3f4;
             --text-dark: #202124;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -39,9 +39,7 @@
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
         /* --- PLUSZ GOMB ÉS LEGÖRDÜLŐ MENÜ --- */
-        .add-note-wrapper {
-            position: relative; text-align: center; margin: 0 auto 30px auto;
-        }
+        .add-note-wrapper { position: relative; text-align: center; margin: 0 auto 30px auto; }
         
         .add-note-btn {
             background: var(--accent-color); color: #000;
@@ -50,7 +48,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: transform 0.2s, box-shadow 0.2s;
             display: flex; align-items: center; justify-content: center; margin: 0 auto;
         }
-        
         .add-note-btn:hover { transform: scale(1.05); box-shadow: 0 6px 14px rgba(0,0,0,0.5); }
 
         .type-dropdown {
@@ -60,7 +57,6 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 10;
             min-width: 150px; display: none; opacity: 0; transition: opacity 0.2s;
         }
-        
         .type-dropdown.show { display: flex; opacity: 1; }
         
         .type-dropdown button {
@@ -70,19 +66,18 @@
         }
         .type-dropdown button:hover { background: rgba(255,255,255,0.1); }
 
-        /* --- JEGYZETKÉSZÍTŐ (Új háttérszín és elrejtés) --- */
+        /* --- JEGYZETKÉSZÍTŐ --- */
         .note-creator {
             background: linear-gradient(145deg, var(--creator-gradient-start) 0%, var(--creator-gradient-end) 100%);
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 12px; padding: 20px; max-width: 600px; margin: 0 auto 30px auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none; /* Alapból rejtett */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none;
         }
 
         .type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .type-btn { 
             background: rgba(255,255,255,0.1); color: white; padding: 6px 14px; 
-            border-radius: 6px; font-size: 13px; opacity: 0.6; border: none; cursor: pointer;
-            transition: 0.2s;
+            border-radius: 6px; font-size: 13px; opacity: 0.6; border: none; cursor: pointer; transition: 0.2s;
         }
         .type-btn:hover { background: rgba(255,255,255,0.2); }
         .type-btn.active { opacity: 1; background: var(--accent-color); color: #000; font-weight: bold; }
@@ -91,6 +86,7 @@
         @media (max-width: 800px) { .notes-grid { column-count: 2; } }
         @media (max-width: 500px) { .notes-grid { column-count: 1; } }
 
+        /* --- KÁRTYA ÉS LINKEK STÍLUSA --- */
         .note-card {
             background: var(--card-bg); color: var(--text-dark);
             border-radius: 10px; padding: 18px; margin-bottom: 15px;
@@ -113,6 +109,12 @@
         }
         .preview-list-item { margin-bottom: 4px; display: flex; gap: 6px; }
 
+        /* Dinamikusan generált linkek stílusai */
+        .note-link { color: var(--accent-color); text-decoration: underline; word-break: break-all; font-weight: 500;}
+        .note-card .note-link { color: #0a2d5e; font-weight: bold; } /* Sárga kártyán sötétkék link */
+        .note-card .note-link:hover { color: #000; }
+
+        /* --- MODALOK ÉS EGYÉB --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); display: none; justify-content: center;
@@ -139,11 +141,9 @@
             background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2);
             padding: 8px; border-radius: 4px; color: var(--text-dark); font-family: inherit;
         }
-        /* Fehér szöveg input a sötét kék jegyzetkészítőben */
         .note-creator .list-item input[type="text"], .note-creator .list-item input[type="number"] {
             background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;
         }
-
         .money-total { border-top: 2px solid rgba(0,0,0,0.2); margin-top: 15px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
 
         .history-section { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.3); font-size: 0.85rem; }
@@ -212,7 +212,6 @@
         </header>
 
         <div class="container">
-            
             <div class="add-note-wrapper" id="add-note-wrapper">
                 <button class="add-note-btn" onclick="toggleDropdown(event)">+</button>
                 <div class="type-dropdown" id="type-dropdown">
@@ -239,7 +238,6 @@
                 
                 <div id="creator-content-area" style="margin-top:15px;">
                     <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" placeholder="Írj valamit..."></div>
-                    
                     <div id="list-creator" class="hidden" style="background:rgba(0,0,0,0.1); padding:10px; border-radius:8px; border: 1px solid rgba(255,255,255,0.05);">
                         <div id="list-items-container"></div>
                         <button onclick="addListItem('list-items-container', 'creator')" class="btn" style="background:none; color:var(--accent-color); font-size:13px; margin-top:10px;">+ Új sor hozzáadása</button>
@@ -370,14 +368,54 @@
         let myFriends = [];
         let incomingRequests = [];
 
-        // Kattintás ablakon kívül (legördülő menü bezárása)
+        // --- Linkify Függvény ---
+        // Ez alakítja a szöveges URL-eket kattintható <a> tag-ekké a DOM-ban
+        function linkifyHTML(htmlString) {
+            if (!htmlString) return '';
+            const temp = document.createElement('div');
+            temp.innerHTML = htmlString;
+            
+            function traverse(node) {
+                if (node.nodeType === 3) { // Csak a szöveges csomópontokat nézzük
+                    const text = node.nodeValue;
+                    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+                    if (urlRegex.test(text)) {
+                        const parts = text.split(urlRegex);
+                        const frag = document.createDocumentFragment();
+                        parts.forEach(part => {
+                            if (urlRegex.test(part)) {
+                                const a = document.createElement('a');
+                                let href = part;
+                                if(href.startsWith('www.')) href = 'https://' + href;
+                                a.href = href;
+                                a.target = "_blank";
+                                a.rel = "noopener noreferrer";
+                                a.className = "note-link";
+                                a.textContent = part;
+                                frag.appendChild(a);
+                            } else if (part) {
+                                frag.appendChild(document.createTextNode(part));
+                            }
+                        });
+                        node.parentNode.replaceChild(frag, node);
+                    }
+                } else if (node.nodeType === 1 && node.nodeName.toLowerCase() !== 'a') {
+                    // Ha nem <a> tag, megyünk tovább a gyerekeire (hogy elkerüljük az egymásba ágyazást)
+                    Array.from(node.childNodes).forEach(traverse);
+                }
+            }
+            
+            Array.from(temp.childNodes).forEach(traverse);
+            return temp.innerHTML;
+        }
+
+        // Kattintás a dropdownon kívül
         window.onclick = function(event) {
             if (!event.target.matches('.add-note-btn')) {
                 document.getElementById('type-dropdown').classList.remove('show');
             }
         }
 
-        // --- ÚJ KEZELŐFELÜLET (Plusz Gomb & Dropdown) ---
         window.toggleDropdown = (event) => {
             document.getElementById('type-dropdown').classList.toggle('show');
             event.stopPropagation();
@@ -393,8 +431,6 @@
         window.hideCreatorPanel = () => {
             document.getElementById('note-creator-panel').style.display = 'none';
             document.getElementById('add-note-wrapper').classList.remove('hidden');
-            
-            // Mezők alaphelyzetbe állítása
             document.getElementById('new-title').value = '';
             document.getElementById('text-creator').innerHTML = '';
             document.getElementById('list-items-container').innerHTML = '';
@@ -402,7 +438,6 @@
 
         window.setCreatorType = (type) => {
             creatorType = type;
-            // Gombok frissítése
             document.querySelectorAll('.type-btn').forEach(b => {
                 if(b.dataset.type === type) b.classList.add('active');
                 else b.classList.remove('active');
@@ -439,7 +474,6 @@
             else container.appendChild(div);
         };
 
-        // --- AUTH ---
         window.logout = () => signOut(auth);
         
         document.getElementById('login-btn').onclick = () => {
@@ -472,7 +506,6 @@
             }
         });
 
-        // --- ÚJ JEGYZET MENTÉSE ---
         document.getElementById('save-note').onclick = async () => {
             const title = document.getElementById('new-title').value;
             let content = "";
@@ -506,8 +539,7 @@
             };
 
             await addDoc(collection(db, "notes"), noteData);
-            
-            hideCreatorPanel(); // Mentés után bezárja a panelt
+            hideCreatorPanel();
         };
 
         // --- BARÁT RENDSZER ---
@@ -656,32 +688,41 @@
                 
                 const card = document.createElement('div');
                 card.className = 'note-card';
-                card.onclick = () => openNote(note.id);
+                
+                // Event Listener, amely meggátolja a kártya megnyitását, ha egy linkre kattintunk
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button')) {
+                        return; // Engedi a link kattintását (új lap), de nem nyitja meg a modal-t
+                    }
+                    openNote(note.id);
+                };
                 
                 let previewHtml = "";
                 
                 if(safeType === 'text') {
-                    // Sortörések korrekt megőrzése az előnézethez
+                    // HTML tagek kiszűrése és új sorok beszúrása
                     let plainText = (note.content || "")
-                        .replace(/<br\s*\/?>/gi, '\n')
-                        .replace(/<\/div>/gi, '\n')
-                        .replace(/<\/p>/gi, '\n')
+                        .replace(/<br\s*\/?>/gi, ' \n ')
+                        .replace(/<\/div>/gi, ' \n ')
+                        .replace(/<\/p>/gi, ' \n ')
                         .replace(/<[^>]*>?/gm, '')
                         .replace(/\n+/g, '\n')
                         .trim();
                         
                     let truncated = plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "");
-                    previewHtml = truncated.replace(/\n/g, '<br>');
+                    // Visszaalakítjuk a sortöréseket <br>-re, majd linkify
+                    let htmlWithBr = truncated.replace(/\n/g, '<br>');
+                    previewHtml = linkifyHTML(htmlWithBr);
                 }
                 else if(safeType === 'checklist') {
                     const itemsToShow = safeItems.slice(0, 3);
-                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><span>${i.checked ? '☑' : '☐'}</span> <span>${i.text}</span></div>`).join('');
+                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><span>${i.checked ? '☑' : '☐'}</span> <span>${linkifyHTML(i.text)}</span></div>`).join('');
                     if(safeItems.length > 3) previewHtml += `<div style="font-size: 0.8rem; margin-top:5px;">+ ${safeItems.length - 3} további elem...</div>`;
                 }
                 else {
                     const sum = safeItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
                     const itemsToShow = safeItems.slice(0, 3);
-                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><b style="width:50px">${i.amount}</b> <span>${i.text}</span></div>`).join('');
+                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><b style="width:50px">${i.amount}</b> <span>${linkifyHTML(i.text)}</span></div>`).join('');
                     if(safeItems.length > 3) previewHtml += `<div style="font-size: 0.8rem; margin-top:5px;">+ további elemek...</div>`;
                     previewHtml += `<div style="margin-top: 8px; font-weight: bold; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">Végösszeg: ${sum}</div>`;
                 }
@@ -724,7 +765,7 @@
             body.innerHTML = '';
 
             if(currentModalType === 'text') {
-                body.innerHTML = content || '';
+                body.innerHTML = linkifyHTML(content || ''); // Olvasó módban is kattintható
                 body.contentEditable = false;
             } else {
                 body.contentEditable = false;
@@ -733,10 +774,10 @@
                     const div = document.createElement('div');
                     div.className = 'list-item';
                     if(currentModalType === 'checklist') {
-                        div.innerHTML = `<input type="checkbox" ${item.checked ? 'checked' : ''} disabled> <span>${item.text}</span>`;
+                        div.innerHTML = `<input type="checkbox" ${item.checked ? 'checked' : ''} disabled> <span>${linkifyHTML(item.text)}</span>`;
                     } else {
                         total += (item.amount || 0);
-                        div.innerHTML = `<b style="width:80px; display:inline-block">${item.amount || 0}</b> <span>${item.text}</span>`;
+                        div.innerHTML = `<b style="width:80px; display:inline-block">${item.amount || 0}</b> <span>${linkifyHTML(item.text)}</span>`;
                     }
                     body.appendChild(div);
                 });
@@ -799,6 +840,8 @@
             const body = document.getElementById('modal-content-display');
             
             if(currentModalType === 'text') {
+                // Szigorúan az ERDETI HTML-t töltjük be, hogy a linkek visszaalakuljanak sima szöveggé a szerkesztéshez
+                body.innerHTML = note.content || ''; 
                 body.contentEditable = true;
             } else {
                 body.innerHTML = '';
