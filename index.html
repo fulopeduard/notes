@@ -50,17 +50,25 @@
 
         .note-card {
             background: var(--card-bg); color: var(--text-dark);
-            border-radius: 10px; padding: 15px; margin-bottom: 15px;
+            border-radius: 10px; padding: 18px; margin-bottom: 15px;
             break-inside: avoid; cursor: pointer; transition: transform 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .note-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
-        .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; line-height: 1.3;}
         
         .badge {
-            font-size: 10px; background: rgba(0,0,0,0.1); padding: 2px 6px; 
-            border-radius: 8px; color: #202124; margin-bottom: 8px; display: inline-block; font-weight: bold;
+            font-size: 10px; background: rgba(0,0,0,0.1); padding: 3px 8px; 
+            border-radius: 8px; color: #202124; margin-bottom: 10px; display: inline-block; font-weight: bold;
         }
+
+        /* Megnövelt előnézeti terület stílusa */
+        .preview-content {
+            font-size: 0.95rem; opacity: 0.85; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 6; /* Max 6 sor */
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .preview-list-item { margin-bottom: 4px; display: flex; gap: 6px; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -72,6 +80,7 @@
             background: var(--card-bg); color: var(--text-dark);
             width: 90%; max-width: 700px; max-height: 90vh;
             border-radius: 15px; padding: 25px; overflow-y: auto; position: relative;
+            display: flex; flex-direction: column;
         }
 
         .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -87,7 +96,11 @@
         .money-total { border-top: 2px solid rgba(0,0,0,0.2); margin-top: 15px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
 
         .history-section { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.3); font-size: 0.85rem; }
-        .history-item { margin-bottom: 5px; color: #333; }
+        .history-item { 
+            margin-bottom: 8px; color: #333; cursor: pointer; 
+            padding: 5px; border-radius: 4px; transition: background 0.2s;
+        }
+        .history-item:hover { background: rgba(0,0,0,0.05); }
 
         .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s;}
         .btn-primary { background: var(--accent-color); color: #000; }
@@ -95,15 +108,24 @@
         .btn-save { background: #188038; color: white; margin-top: 10px; }
         .btn-save:hover { background: #13652c; }
         
-        .toolbar { display: none; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.2); padding-bottom: 10px; }
+        .toolbar { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.2); padding-bottom: 10px; }
         .toolbar button { background: rgba(0,0,0,0.1); border:none; padding:5px 10px; border-radius:4px; cursor:pointer;}
         .toolbar button:hover { background: rgba(0,0,0,0.2); }
+        .toolbar input[type="color"] { border:none; width: 30px; height: 30px; padding: 0; background: transparent; cursor: pointer; border-radius: 4px; }
         
-        .edit-mode .toolbar { display: flex; }
+        .modal-content.view-mode #modal-toolbar { display: none; }
+        .modal-content.edit-mode #modal-toolbar { display: flex; }
+        
         .edit-mode .read-only { display: none; }
         .view-mode .edit-only { display: none; }
 
         .hidden { display: none !important; }
+
+        /* Időgép banner */
+        #history-banner {
+            background: #fbbc04; color: #000; padding: 10px; border-radius: 8px;
+            margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -135,10 +157,16 @@
                     <button class="type-btn" onclick="setCreatorType('money', this)">Pénzügy</button>
                 </div>
                 
+                <div class="toolbar" id="creator-toolbar" style="border-bottom-color: rgba(255,255,255,0.1);">
+                    <button onclick="document.execCommand('bold')" style="color:white; background:rgba(255,255,255,0.1)"><b>Félkövér</b></button>
+                    <button onclick="document.execCommand('underline')" style="color:white; background:rgba(255,255,255,0.1)"><u>Aláhúzott</u></button>
+                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)" value="#ffffff" title="Szöveg Színe">
+                </div>
+
                 <input type="text" id="new-title" placeholder="Jegyzet címe..." style="background:transparent; border:none; font-size:18px; font-weight:bold; color:white; width:100%; outline:none;">
                 
                 <div id="creator-content-area" style="margin-top:15px;">
-                    <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" placeholder="Írj valamit... (Félkövérhez nyomj Ctrl+B-t)"></div>
+                    <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" placeholder="Írj valamit..."></div>
                     
                     <div id="list-creator" class="hidden" style="background:rgba(255,255,255,0.9); padding:10px; border-radius:8px;">
                         <div id="list-items-container"></div>
@@ -156,7 +184,12 @@
     </div>
 
     <div class="modal-overlay" id="note-modal">
-        <div class="modal-content" id="modal-container">
+        <div class="modal-content view-mode" id="modal-container">
+            <div id="history-banner" class="hidden">
+                <span>🕒 Múltbeli állapotot nézel!</span>
+                <button class="btn" onclick="restoreLiveView()" style="background:#000; color:#fff; padding: 5px 10px; font-size: 12px;">Vissza a jelenbe</button>
+            </div>
+
             <div class="modal-header">
                 <h2 id="modal-title" style="margin:0; outline:none; flex:1;"></h2>
                 <span class="close-modal" onclick="closeModal()">×</span>
@@ -166,6 +199,7 @@
                 <div class="toolbar" id="modal-toolbar">
                     <button onclick="document.execCommand('bold')"><b>Félkövér</b></button>
                     <button onclick="document.execCommand('underline')"><u>Aláhúzott</u></button>
+                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)" value="#202124" title="Szöveg Színe">
                 </div>
 
                 <div id="modal-content-display" class="rich-editor"></div>
@@ -176,11 +210,11 @@
                     <button id="edit-btn" class="btn btn-primary read-only" onclick="enableEditMode()">Szerkesztés</button>
                     <button id="save-edit-btn" class="btn btn-save edit-only" onclick="saveEdit()">Változtatások mentése</button>
                 </div>
-                <button onclick="deleteCurrentNote()" class="btn" style="background:rgba(217, 48, 37, 0.1); color:#d93025;">Törlés</button>
+                <button id="delete-btn" onclick="deleteCurrentNote()" class="btn" style="background:rgba(217, 48, 37, 0.1); color:#d93025;">Törlés</button>
             </div>
 
             <div class="history-section" id="modal-history">
-                <b>Előzmények:</b>
+                <b>Előzmények (kattints egyre az időgéphez):</b>
                 <div id="history-list"></div>
             </div>
         </div>
@@ -205,8 +239,8 @@
         const auth = getAuth(app);
 
         let user = null;
-        let creatorType = 'text';       // A főoldali "Új jegyzet" típusa
-        let currentModalType = 'text';  // A megnyitott jegyzet típusa
+        let creatorType = 'text';       
+        let currentModalType = 'text';  
         let currentNoteId = null;
         
         let myNotesMap = new Map();
@@ -244,7 +278,7 @@
             }
         });
 
-        // --- TÍPUS KEZELÉS (Új Jegyzet) ---
+        // --- TÍPUS KEZELÉS ---
         window.setCreatorType = (type, btn) => {
             creatorType = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -252,9 +286,11 @@
             
             document.getElementById('text-creator').classList.add('hidden');
             document.getElementById('list-creator').classList.add('hidden');
+            document.getElementById('creator-toolbar').classList.add('hidden');
             
             if(type === 'text') {
                 document.getElementById('text-creator').classList.remove('hidden');
+                document.getElementById('creator-toolbar').classList.remove('hidden'); // Formázó sáv mutatása
             } else {
                 document.getElementById('list-creator').classList.remove('hidden');
                 document.getElementById('list-items-container').innerHTML = '';
@@ -262,12 +298,9 @@
             }
         };
 
-        // Dinamikus sor hozzáadása
         window.addListItem = (containerId, mode, val = '', checked = false, amount = '') => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            
-            // Ha épp új jegyzetet írunk, a creatorType-ot nézzük, ha a modalban vagyunk, a currentModalType-ot
             const activeType = (mode === 'creator') ? creatorType : currentModalType;
 
             if(activeType === 'checklist'){
@@ -282,7 +315,7 @@
             else container.appendChild(div);
         };
 
-        // --- ÚJ JEGYZET MENTÉSE ---
+        // --- ÚJ JEGYZET MENTÉSE (Állapot mentéssel a historyba) ---
         document.getElementById('save-note').onclick = async () => {
             const title = document.getElementById('new-title').value;
             let content = "";
@@ -306,28 +339,25 @@
                 if(!title && items.length === 0) return;
             }
 
+            // Snapshot mentése a történelemhez
+            const snapshotState = { title: title, content: content, items: items };
+
             const noteData = {
-                title: title, 
-                type: creatorType, 
-                content: content, 
-                items: items,
-                owner: user.email, 
-                sharedWith: [], 
-                pendingUsers: [],
+                title: title, type: creatorType, content: content, items: items,
+                owner: user.email, sharedWith: [], pendingUsers: [],
                 createdAt: Date.now(),
-                history: [{ user: user.email, time: Date.now(), action: 'Létrehozva' }]
+                history: [{ user: user.email, time: Date.now(), action: 'Létrehozva', state: snapshotState }]
             };
 
             await addDoc(collection(db, "notes"), noteData);
             
-            // Reset
             document.getElementById('new-title').value = '';
             document.getElementById('text-creator').innerHTML = '';
             document.getElementById('list-items-container').innerHTML = '';
             if(creatorType !== 'text') addListItem('list-items-container', 'creator');
         };
 
-        // --- ADATBÁZIS FIGYELÉSE ---
+        // --- RENDERELÉS & ELŐNÉZET ---
         function initApp() {
             const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
             const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
@@ -353,7 +383,6 @@
                 .sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
             
             combined.forEach(note => {
-                // BIZTONSÁGI VISSZAESÉS RÉGI JEGYZETEKHEZ
                 const safeType = note.type || 'text';
                 const safeItems = note.items || [];
                 
@@ -361,57 +390,73 @@
                 card.className = 'note-card';
                 card.onclick = () => openNote(note.id);
                 
-                let preview = "";
+                let previewHtml = "";
+                
+                // NAGYOBB ELŐNÉZET LOGIKÁJA
                 if(safeType === 'text') {
-                    // HTML tag-ek eltávolítása az előnézetből
+                    // Leszedjük a HTML tageket, és 150 karaktert engedünk
                     const plainText = (note.content || "").replace(/<[^>]*>?/gm, '');
-                    preview = plainText.substring(0, 50) + (plainText.length > 50 ? "..." : "");
+                    previewHtml = plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "");
                 }
                 else if(safeType === 'checklist') {
-                    preview = `📝 Checklist (${safeItems.length} elem)`;
+                    // Első 3 elem mutatása
+                    const itemsToShow = safeItems.slice(0, 3);
+                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><span>${i.checked ? '☑' : '☐'}</span> <span>${i.text}</span></div>`).join('');
+                    if(safeItems.length > 3) previewHtml += `<div style="font-size: 0.8rem; margin-top:5px;">+ ${safeItems.length - 3} további elem...</div>`;
                 }
                 else {
+                    // Pénzügy: Első 3 elem + összeg
                     const sum = safeItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-                    preview = `💰 Pénzügy (Összesen: ${sum})`;
+                    const itemsToShow = safeItems.slice(0, 3);
+                    previewHtml = itemsToShow.map(i => `<div class="preview-list-item"><b style="width:50px">${i.amount}</b> <span>${i.text}</span></div>`).join('');
+                    if(safeItems.length > 3) previewHtml += `<div style="font-size: 0.8rem; margin-top:5px;">+ további elemek...</div>`;
+                    previewHtml += `<div style="margin-top: 8px; font-weight: bold; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">Végösszeg: ${sum}</div>`;
                 }
 
                 const badgeHtml = note.owner === user.email ? '' : `<div class="badge">👥 Tőle: ${note.owner.split('@')[0]}</div>`;
 
                 card.innerHTML = `
                     ${badgeHtml}
-                    <h3>${note.title || 'Névtelen'}</h3>
-                    <div style="font-size:0.9rem; opacity:0.8;">${preview}</div>
+                    <h3>${note.title || 'Névtelen jegyzet'}</h3>
+                    <div class="preview-content">${previewHtml}</div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // --- MODAL LOGIKA (Megtekintés / Szerkesztés) ---
+        // --- MODAL & IDŐGÉP LOGIKA ---
         window.openNote = (id) => {
             currentNoteId = id;
+            document.getElementById('history-banner').classList.add('hidden');
+            document.getElementById('modal-actions').classList.remove('hidden');
+            document.getElementById('delete-btn').classList.remove('hidden');
+            
             const note = myNotesMap.get(id) || sharedNotesMap.get(id);
-            currentModalType = note.type || 'text'; // Régi jegyzetek alapból 'text'
+            renderModalState(note.title, note.type, note.content, note.items, note.history);
             
             const modal = document.getElementById('note-modal');
             const container = document.getElementById('modal-container');
+            modal.style.display = 'flex';
+            container.className = 'modal-content view-mode';
+        };
+
+        // Kiszervezett renderelő függvény, hogy a history-ból is tudjuk hívni
+        function renderModalState(title, type, content, items, historyArr, isHistoryView = false) {
+            currentModalType = type || 'text';
             const body = document.getElementById('modal-content-display');
             const titleEl = document.getElementById('modal-title');
             
-            modal.style.display = 'flex';
-            container.className = 'modal-content view-mode';
-            
-            titleEl.innerText = note.title || '';
+            titleEl.innerText = title || '';
             titleEl.contentEditable = false;
             body.innerHTML = '';
 
-            // Tartalom renderelése "Csak olvasható" módban
             if(currentModalType === 'text') {
-                body.innerHTML = note.content || '';
+                body.innerHTML = content || '';
                 body.contentEditable = false;
             } else {
                 body.contentEditable = false;
                 let total = 0;
-                (note.items || []).forEach(item => {
+                (items || []).forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'list-item';
                     if(currentModalType === 'checklist') {
@@ -430,16 +475,52 @@
                 }
             }
 
-            // Előzmények renderelése (biztonságosan)
-            const hList = document.getElementById('history-list');
-            const historyData = note.history || [];
-            if(historyData.length > 0) {
-                hList.innerHTML = historyData.slice().reverse().map(h => `
-                    <div class="history-item"><b>${new Date(h.time).toLocaleString('hu-HU')}</b> - ${(h.user || 'Ismeretlen').split('@')[0]}: ${h.action}</div>
-                `).join('');
-            } else {
-                hList.innerHTML = `<div class="history-item">Nincsenek elérhető előzmények (régi jegyzet).</div>`;
+            // Csak akkor frissítsük a history listát, ha nem a history nézetben vagyunk épp
+            if(!isHistoryView) {
+                const hList = document.getElementById('history-list');
+                const historyData = historyArr || [];
+                if(historyData.length > 0) {
+                    // Az indexeket meg kell fordítani, mert a tömböt megfordítjuk vizuálisan
+                    const totalLen = historyData.length;
+                    hList.innerHTML = historyData.slice().reverse().map((h, i) => {
+                        const originalIndex = totalLen - 1 - i;
+                        return `<div class="history-item" onclick="viewHistoryState(${originalIndex})" title="Kattints az állapot megtekintéséhez">
+                            <b>${new Date(h.time).toLocaleString('hu-HU')}</b> - ${(h.user || 'Ismeretlen').split('@')[0]}: ${h.action}
+                        </div>`;
+                    }).join('');
+                } else {
+                    hList.innerHTML = `<div class="history-item">Nincsenek elérhető előzmények.</div>`;
+                }
             }
+        }
+
+        window.viewHistoryState = (historyIndex) => {
+            const note = myNotesMap.get(currentNoteId) || sharedNotesMap.get(currentNoteId);
+            const targetHistory = note.history[historyIndex];
+            
+            if(!targetHistory.state) {
+                alert("Ehhez a régi verzióhoz az alkalmazás korábbi verziójában még nem került elmentésre a tartalom.");
+                return;
+            }
+
+            // Nézet átváltása "Időgép" módba
+            document.getElementById('modal-container').className = 'modal-content view-mode';
+            document.getElementById('modal-actions').classList.add('hidden');
+            document.getElementById('delete-btn').classList.add('hidden');
+            document.getElementById('history-banner').classList.remove('hidden');
+
+            renderModalState(
+                targetHistory.state.title, 
+                note.type, // Típus sosem változik
+                targetHistory.state.content, 
+                targetHistory.state.items, 
+                null, 
+                true
+            );
+        };
+
+        window.restoreLiveView = () => {
+            openNote(currentNoteId); // Újratölti a jelenlegi élő változatot
         };
 
         window.enableEditMode = () => {
@@ -475,13 +556,12 @@
             const body = document.getElementById('modal-content-display');
             const title = document.getElementById('modal-title').innerText;
             
-            let updateData = { 
-                title: title,
-                history: arrayUnion({ user: user.email, time: Date.now(), action: 'Szerkesztve' }) 
-            };
+            let updateData = { title: title };
+            let snapshotState = { title: title };
 
             if(currentModalType === 'text') {
                 updateData.content = body.innerHTML;
+                snapshotState.content = body.innerHTML;
             } else {
                 let items = [];
                 const rows = body.querySelectorAll('.list-item');
@@ -496,7 +576,16 @@
                     }
                 });
                 updateData.items = items;
+                snapshotState.items = items;
             }
+
+            // Új snapshot hozzáadása a history-hoz
+            updateData.history = arrayUnion({ 
+                user: user.email, 
+                time: Date.now(), 
+                action: 'Szerkesztve',
+                state: snapshotState
+            });
 
             await updateDoc(noteRef, updateData);
             closeModal();
@@ -513,7 +602,6 @@
                 closeModal();
             }
         };
-
     </script>
 </body>
 </html>
