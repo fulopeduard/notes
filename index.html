@@ -3,175 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Dark Notes - Firebase</title>
+    <title>CloudKeep Pro - Firebase</title>
     <style>
         :root {
-            /* Elegáns sötét gradient háttérhez tartozó színek */
-            --surface-color: rgba(30, 30, 34, 0.85); /* Üveges hatás */
-            --card-bg: #4a421b; /* Sötét módhoz illő elegáns sárga */
+            --surface-color: rgba(30, 30, 34, 0.95);
+            --card-bg: #d3b212;
             --text-main: #f1f3f4;
-            --text-muted: #bdc1c6;
+            --text-dark: #202124;
             --border-color: rgba(255, 255, 255, 0.1);
             --accent-color: #8ab4f8;
-            --warning-color: #fbbc04;
             --danger-color: #f28b82;
             --success-color: #81c995;
-            --btn-bg: #3c4043;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            /* Modern, mély sötét gradient háttér */
-            background: linear-gradient(145deg, #0d1117 0%, #161b22 50%, #0a0c10 100%);
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(145deg, #0d1117 0%, #161b22 100%);
             background-attachment: fixed;
-            margin: 0;
-            padding: 0;
-            color: var(--text-main);
-            min-height: 100vh;
+            margin: 0; color: var(--text-main); min-height: 100vh;
         }
 
-        /* --- Auth & Layout --- */
-        #auth-container, #app-container { transition: opacity 0.3s; }
-        #auth-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-
-        .auth-card {
-            background: var(--surface-color); padding: 40px; border-radius: 16px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.6); width: 100%; max-width: 380px; 
-            text-align: center; backdrop-filter: blur(10px); border: 1px solid var(--border-color);
-        }
-
-        input, textarea, .rich-editor {
-            background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: white;
-            padding: 12px; border-radius: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box;
-            font-family: inherit; font-size: 14px; outline: none;
-        }
-        
-        .rich-editor:focus { border-color: var(--accent-color); }
-        
-        /* Placeholder trükk a formázható div-hez */
-        .rich-editor[contenteditable]:empty::before {
-            content: attr(placeholder); color: #757a80; cursor: text;
-        }
-
-        button { cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; border: none; }
-        
-        .primary-btn { background: var(--accent-color); color: #000; padding: 12px; width: 100%; }
-        .primary-btn:hover { background: #aecbfa; box-shadow: 0 0 10px rgba(138, 180, 248, 0.4); }
-
-        /* --- App Header & Notifications --- */
+        /* --- Header & Layout --- */
         header {
             background: var(--surface-color); padding: 15px 30px;
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .notification-area { max-width: 600px; margin: 20px auto; }
-        .invite-card {
-            background: rgba(60, 64, 67, 0.9); padding: 15px; border-radius: 8px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center; 
-            border-left: 4px solid var(--warning-color); border-right: 1px solid var(--border-color);
-        }
-        .invite-btns button { padding: 6px 12px; margin-left: 5px; font-size: 12px; }
-
-        /* --- Notes Grid & Toolbar --- */
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
+        /* --- Note Creator --- */
         .note-creator {
             background: var(--surface-color); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 20px; max-width: 500px; margin: 0 auto 30px auto;
-            backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border-radius: 12px; padding: 20px; max-width: 550px; margin: 0 auto 30px auto;
         }
 
-        .toolbar {
-            display: flex; gap: 8px; margin-bottom: 12px; padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
+        .type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .type-btn { 
+            background: #3c4043; color: white; padding: 5px 12px; 
+            border-radius: 6px; font-size: 12px; opacity: 0.6;
         }
-        .toolbar button {
-            background: var(--btn-bg); color: var(--text-main); padding: 6px 12px; 
-            font-size: 14px; border: 1px solid var(--border-color);
-        }
-        .toolbar button:hover { background: #525659; }
-        .toolbar input[type="color"] {
-            padding: 0; width: 32px; height: 32px; border: none; cursor: pointer;
-            background: transparent; margin-bottom: 0; border-radius: 4px; overflow: hidden;
-        }
+        .type-btn.active { opacity: 1; border: 1px solid var(--accent-color); }
 
+        /* --- Grid & Cards --- */
         .notes-grid { column-count: 3; column-gap: 15px; }
         @media (max-width: 800px) { .notes-grid { column-count: 2; } }
         @media (max-width: 500px) { .notes-grid { column-count: 1; } }
 
         .note-card {
-            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 10px; padding: 18px; margin-bottom: 15px; break-inside: avoid;
-            position: relative; transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: var(--card-bg); color: var(--text-dark);
+            border-radius: 10px; padding: 15px; margin-bottom: 15px;
+            break-inside: avoid; cursor: pointer; transition: transform 0.2s;
         }
-        .note-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5); 
-        }
+        .note-card:hover { transform: translateY(-3px); }
+        .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
 
-        .note-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; outline: none; }
-        .note-content { font-size: 0.95rem; line-height: 1.5; outline: none; word-wrap: break-word; }
-
-        .card-actions {
-            margin-top: 15px; display: flex; gap: 10px; 
-            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(5px);
         }
 
-        .icon-btn { background: none; color: var(--text-muted); font-size: 16px; padding: 5px; }
-        .icon-btn:hover { color: #fff; }
-
-        .badge {
-            font-size: 11px; background: rgba(0,0,0,0.3); padding: 3px 8px; 
-            border-radius: 12px; color: rgba(255,255,255,0.8); display: inline-block; margin-bottom: 10px;
+        .modal-content {
+            background: var(--card-bg); color: var(--text-dark);
+            width: 90%; max-width: 700px; max-height: 90vh;
+            border-radius: 15px; padding: 25px; overflow-y: auto; position: relative;
         }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .close-modal { font-size: 24px; cursor: pointer; }
+
+        /* --- Editor & Lists --- */
+        .rich-editor { min-height: 100px; outline: none; margin-bottom: 15px; line-height: 1.6; }
+        .list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .list-item input[type="text"], .list-item input[type="number"] {
+            background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1);
+            padding: 5px; border-radius: 4px; color: var(--text-dark);
+        }
+        .money-total { border-top: 2px solid rgba(0,0,0,0.2); margin-top: 15px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
+
+        /* --- History Section --- */
+        .history-section {
+            margin-top: 30px; padding-top: 15px;
+            border-top: 1px dashed rgba(0,0,0,0.2); font-size: 0.8rem;
+        }
+        .history-item { margin-bottom: 5px; color: #444; }
+
+        /* --- Buttons --- */
+        .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-primary { background: #1a73e8; color: white; }
+        .btn-save { background: #188038; color: white; margin-top: 10px; }
+        .toolbar { display: none; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; }
+        
+        .edit-mode .toolbar { display: flex; }
+        .edit-mode .read-only { display: none; }
+        .view-mode .edit-only { display: none; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="auth-container">
-        <div class="auth-card">
-            <h2 style="color: var(--accent-color); margin-top:0;">✨ CloudKeep</h2>
-            <p id="auth-error" style="color: var(--danger-color); display:none; font-size: 13px;"></p>
-            <input type="email" id="email-input" placeholder="Email cím">
-            <input type="password" id="password-input" placeholder="Jelszó (min. 6 karakter)">
-            <button class="primary-btn" id="login-btn">Bejelentkezés</button>
-            <button style="background:none; color: var(--text-muted); margin-top:10px" id="reg-btn">Regisztráció</button>
+    <div id="auth-container" class="container" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <div style="background: var(--surface-color); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
+            <h2 style="color: var(--accent-color)">✨ CloudKeep Pro</h2>
+            <input type="email" id="email-input" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
+            <input type="password" id="password-input" placeholder="Jelszó" style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; border:none;">
+            <button class="btn btn-primary" id="login-btn" style="width:100%">Bejelentkezés</button>
+            <button id="reg-btn" style="background:none; color:grey; border:none; margin-top:10px; cursor:pointer">Regisztráció</button>
         </div>
     </div>
 
-    <div id="app-container" style="display:none">
+    <div id="app-container" class="hidden">
         <header>
-            <div style="font-weight:bold; font-size: 22px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                ✨ <span style="color:var(--accent-color)">Cloud</span>Keep
-            </div>
-            <div style="display:flex; align-items:center; gap:15px">
-                <span id="user-mail" style="font-size: 14px; color: var(--text-muted)"></span>
-                <button onclick="logout()" class="icon-btn" title="Kijelentkezés" style="border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;">Kijelentkezés</button>
+            <div style="font-weight:bold; font-size: 20px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
+            <div>
+                <span id="user-mail" style="font-size: 12px; margin-right: 15px;"></span>
+                <button onclick="logout()" class="btn" style="background:#3c4043; color:white; font-size:12px;">Kilépés</button>
             </div>
         </header>
 
         <div class="container">
-            <div id="invites-container" class="notification-area"></div>
-
             <div class="note-creator">
-                <div class="toolbar">
-                    <button type="button" onclick="document.execCommand('bold', false, null)" title="Félkövér"><b>B</b></button>
-                    <button type="button" onclick="document.execCommand('underline', false, null)" title="Aláhúzott"><u>U</u></button>
-                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)" title="Szövegszín" value="#ffffff">
+                <div class="type-selector">
+                    <button class="type-btn active" onclick="setCreatorType('text', this)">Szöveg</button>
+                    <button class="type-btn" onclick="setCreatorType('checklist', this)">Checklist</button>
+                    <button class="type-btn" onclick="setCreatorType('money', this)">Pénzügy</button>
                 </div>
+                <input type="text" id="new-title" placeholder="Cím..." style="background:transparent; border:none; font-size:18px; font-weight:bold; color:white; width:100%; outline:none;">
                 
-                <input type="text" id="new-title" placeholder="Jegyzet címe..." style="background:transparent; border:none; padding:0 5px; font-weight:bold; font-size: 18px;">
-                <div id="new-content" class="rich-editor" contenteditable="true" placeholder="Írj valamit... (Kijelölve színezheted, formázhatod)" style="background:transparent; border:none; padding:5px; margin-top:10px; min-height: 60px;"></div>
-                
-                <div style="text-align:right; margin-top: 15px;">
-                    <button id="save-note" class="primary-btn" style="width:auto; padding: 8px 24px; border-radius: 20px;">Mentés</button>
+                <div id="creator-content-area" style="margin-top:15px;">
+                    <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white;" placeholder="Írj valamit..."></div>
+                    
+                    <div id="list-creator" class="hidden">
+                        <div id="list-items-container"></div>
+                        <button onclick="addListItem('list-items-container')" class="btn" style="background:none; color:var(--accent-color); font-size:12px;">+ Új sor</button>
+                    </div>
+                </div>
+
+                <div style="text-align:right; margin-top:15px;">
+                    <button id="save-note" class="btn btn-primary">Mentés</button>
                 </div>
             </div>
 
             <div class="notes-grid" id="notes-grid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="note-modal">
+        <div class="modal-content" id="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title" style="margin:0;"></h2>
+                <span class="close-modal" onclick="closeModal()">×</span>
+            </div>
+            
+            <div id="modal-body">
+                <div class="toolbar" id="modal-toolbar">
+                    <button onclick="document.execCommand('bold')"><b>B</b></button>
+                    <button onclick="document.execCommand('underline')"><u>U</u></button>
+                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)">
+                </div>
+
+                <div id="modal-content-display" class="rich-editor"></div>
+            </div>
+
+            <div class="modal-footer" style="margin-top:20px; display:flex; justify-content: space-between; align-items:center;">
+                <div id="modal-actions">
+                    <button id="edit-btn" class="btn btn-primary read-only" onclick="enableEditMode()">Szerkesztés</button>
+                    <button id="save-edit-btn" class="btn btn-save edit-only" onclick="saveEdit()">Változtatások mentése</button>
+                </div>
+                <button onclick="deleteCurrentNote()" class="btn" style="background:none; color:#d93025;">Törlés</button>
+            </div>
+
+            <div class="history-section" id="modal-history">
+                <b>Előzmények:</b>
+                <div id="history-list"></div>
+            </div>
         </div>
     </div>
 
@@ -194,183 +203,222 @@
         const auth = getAuth(app);
 
         let user = null;
-        let unsubscribeSajat = null;
-        let unsubscribeMegosztott = null;
-
-        // Két külön Map az azonnali UI frissítéshez (ez javítja a törlési hibát!)
-        let myNotesMap = new Map();
-        let sharedNotesMap = new Map();
+        let creatorType = 'text';
+        let currentNoteId = null;
+        let allNotes = [];
 
         // --- AUTH ---
         window.logout = () => signOut(auth);
-
         document.getElementById('login-btn').onclick = () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
-                .catch(err => alert("Hiba: " + err.message));
+            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).catch(err => alert(err.message));
         };
-
         document.getElementById('reg-btn').onclick = () => {
-            const email = document.getElementById('email-input').value;
-            if(document.getElementById('password-input').value.length < 6) return alert("Min 6 karakter!");
-            createUserWithEmailAndPassword(auth, email, document.getElementById('password-input').value)
-                .then(async () => {
-                    await setDoc(doc(db, "users", email), { friends: [] });
-                })
-                .catch(err => alert("Hiba: " + err.message));
+            createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).then(() => setDoc(doc(db, "users", auth.currentUser.email), {friends:[]}));
         };
 
         onAuthStateChanged(auth, u => {
             user = u;
-            if (u) {
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('app-container').style.display = 'block';
+            if(u){
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('user-mail').innerText = u.email;
                 initApp();
             } else {
-                document.getElementById('auth-container').style.display = 'flex';
-                document.getElementById('app-container').style.display = 'none';
-                if(unsubscribeSajat) unsubscribeSajat();
-                if(unsubscribeMegosztott) unsubscribeMegosztott();
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        // --- CORE LOGIC ---
-        function initApp() {
-            listenNotes();
-            listenInvites();
-        }
-
-        // Jegyzet mentése (Most már HTML-t ment a színek/félkövér miatt)
-        document.getElementById('save-note').onclick = async () => {
-            const title = document.getElementById('new-title').value;
-            const content = document.getElementById('new-content').innerHTML; // innerText helyett innerHTML
+        // --- TÍPUS KEZELÉS ---
+        window.setCreatorType = (type, btn) => {
+            creatorType = type;
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             
-            if(!title && (!content || content === '<br>')) return;
-
-            await addDoc(collection(db, "notes"), {
-                title, content,
-                owner: user.email,
-                sharedWith: [],
-                pendingUsers: [],
-                createdAt: Date.now()
-            });
+            document.getElementById('text-creator').classList.add('hidden');
+            document.getElementById('list-creator').classList.add('hidden');
             
-            document.getElementById('new-title').value = '';
-            document.getElementById('new-content').innerHTML = '';
-        };
-
-        // Jegyzetek figyelése (A TÖRLÉSI HIBA JAVÍTÁSA)
-        function listenNotes() {
-            const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
-            const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
-
-            // Amikor frissül a DB, TÖRLÜK az eddigi listát, és újra feltöltjük a pillanatnyi állapottal.
-            // Így a letörölt jegyzetek garantáltan eltűnnek egyből.
-            unsubscribeSajat = onSnapshot(qSaját, snap => {
-                myNotesMap.clear();
-                snap.forEach(d => myNotesMap.set(d.id, {id: d.id, ...d.data()}));
-                renderAllNotes();
-            });
-
-            unsubscribeMegosztott = onSnapshot(qMegosztott, snap => {
-                sharedNotesMap.clear();
-                snap.forEach(d => sharedNotesMap.set(d.id, {id: d.id, ...d.data()}));
-                renderAllNotes();
-            });
-        }
-
-        // Kártyák kirajzolása
-        function renderAllNotes() {
-            const grid = document.getElementById('notes-grid');
-            grid.innerHTML = '';
-            
-            // Összefűzzük a saját és a megosztott jegyzeteket
-            const combined = [...myNotesMap.values(), ...sharedNotesMap.values()]
-                .sort((a,b) => b.createdAt - a.createdAt);
-            
-            combined.forEach(note => {
-                const card = document.createElement('div');
-                card.className = 'note-card';
-                card.innerHTML = `
-                    <div class="badge">${note.owner === user.email ? 'Saját' : '👥 Megosztva tőle: ' + note.owner.split('@')[0]}</div>
-                    <div class="note-title" contenteditable="true" onblur="updateNote('${note.id}', 'title', this.innerText)">${note.title}</div>
-                    
-                    <div class="note-content" contenteditable="true" onblur="updateNote('${note.id}', 'content', this.innerHTML)">${note.content}</div>
-                    
-                    <div class="card-actions">
-                        <button class="icon-btn" onclick="shareNote('${note.id}')" title="Megosztás másokkal">👤+</button>
-                        <button class="icon-btn" onclick="deleteNote('${note.id}')" title="Jegyzet Törlése" style="color: var(--danger-color)">🗑️</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // --- TÖBBI FUNKCIÓ (Változatlan) ---
-        window.shareNote = async (noteId) => {
-            const targetEmail = prompt("Kivel szeretnéd megosztani? (Email cím)");
-            if (!targetEmail || targetEmail === user.email) return;
-
-            const targetRef = doc(db, "users", targetEmail);
-            const targetSnap = await getDoc(targetRef);
-            
-            if (targetSnap.exists() && targetSnap.data().friends.includes(user.email)) {
-                await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayUnion(targetEmail) });
-                alert("Sikeresen megosztva!");
-            } else {
-                await updateDoc(doc(db, "notes", noteId), { pendingUsers: arrayUnion(targetEmail) });
-                alert("Megosztási kérelem elküldve!");
+            if(type === 'text') document.getElementById('text-creator').classList.remove('hidden');
+            else {
+                document.getElementById('list-creator').classList.remove('hidden');
+                document.getElementById('list-items-container').innerHTML = '';
+                addListItem('list-items-container');
             }
         };
 
-        function listenInvites() {
-            const q = query(collection(db, "notes"), where("pendingUsers", "array-contains", user.email));
+        window.addListItem = (containerId, val = '', checked = false, amount = 0) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            if(creatorType === 'checklist' || (containerId === 'modal-content-display' && creatorType === 'checklist')){
+                div.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''}> <input type="text" value="${val}" style="flex:1">`;
+            } else {
+                div.innerHTML = `<input type="number" value="${amount}" style="width:70px" class="m-amt"> <input type="text" value="${val}" style="flex:1" class="m-txt">`;
+            }
+            document.getElementById(containerId).appendChild(div);
+        };
+
+        // --- MENTÉS ---
+        document.getElementById('save-note').onclick = async () => {
+            const title = document.getElementById('new-title').value;
+            let content = null;
+            let items = [];
+
+            if(creatorType === 'text') content = document.getElementById('text-creator').innerHTML;
+            else {
+                const rows = document.querySelectorAll('#list-items-container .list-item');
+                rows.forEach(row => {
+                    if(creatorType === 'checklist') items.push({ text: row.querySelector('input[type="text"]').value, checked: row.querySelector('input[type="checkbox"]').checked });
+                    else items.push({ text: row.querySelector('.m-txt').value, amount: parseFloat(row.querySelector('.m-amt').value) || 0 });
+                });
+            }
+
+            const noteData = {
+                title, type: creatorType, content, items,
+                owner: user.email, sharedWith: [], pendingUsers: [],
+                createdAt: Date.now(),
+                history: [{ user: user.email, time: Date.now(), action: 'Létrehozva' }]
+            };
+
+            await addDoc(collection(db, "notes"), noteData);
+            resetCreator();
+        };
+
+        function resetCreator(){
+            document.getElementById('new-title').value = '';
+            document.getElementById('text-creator').innerHTML = '';
+            document.getElementById('list-items-container').innerHTML = '';
+            addListItem('list-items-container');
+        }
+
+        // --- LISTENING & RENDERING ---
+        function initApp() {
+            const q = query(collection(db, "notes"), where("owner", "==", user.email));
             onSnapshot(q, snap => {
-                const container = document.getElementById('invites-container');
-                container.innerHTML = '';
+                const grid = document.getElementById('notes-grid');
+                grid.innerHTML = '';
+                allNotes = [];
                 snap.forEach(d => {
-                    const data = d.data();
-                    const div = document.createElement('div');
-                    div.className = 'invite-card';
-                    div.innerHTML = `
-                        <span><b>${data.owner}</b> megosztott veled egy jegyzetet.</span>
-                        <div class="invite-btns">
-                            <button onclick="acceptInvite('${d.id}', '${data.owner}', true)" style="background:var(--success-color); color:#000">Barátként Ment + Elfogad</button>
-                            <button onclick="acceptInvite('${d.id}', '${data.owner}', false)" style="background:var(--accent-color); color:#000">Csak Elfogad</button>
-                            <button onclick="declineInvite('${d.id}')" style="background:var(--danger-color); color:#000">Elutasít</button>
-                        </div>
-                    `;
-                    container.appendChild(div);
+                    const note = {id: d.id, ...d.data()};
+                    allNotes.push(note);
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    card.onclick = () => openNote(note.id);
+                    
+                    let preview = "";
+                    if(note.type === 'text') preview = note.content.substring(0, 50) + "...";
+                    else if(note.type === 'checklist') preview = `📝 Checklist (${note.items.length} elem)`;
+                    else preview = `💰 Pénzügy (Össz: ${note.items.reduce((acc, curr) => acc + curr.amount, 0)})`;
+
+                    card.innerHTML = `<h3>${note.title || 'Névtelen'}</h3><div style="font-size:0.9rem; opacity:0.8;">${preview}</div>`;
+                    grid.appendChild(card);
                 });
             });
         }
 
-        window.acceptInvite = async (noteId, ownerEmail, makeFriend) => {
-            const noteRef = doc(db, "notes", noteId);
-            const noteSnap = await getDoc(noteRef);
-            const data = noteSnap.data();
-            const newPending = data.pendingUsers.filter(e => e !== user.email);
+        // --- MODAL LOGIC ---
+        window.openNote = (id) => {
+            currentNoteId = id;
+            const note = allNotes.find(n => n.id === id);
+            creatorType = note.type; // Modálisban is követjük a típust
             
-            await updateDoc(noteRef, { pendingUsers: newPending, sharedWith: arrayUnion(user.email) });
-            if (makeFriend) await updateDoc(doc(db, "users", user.email), { friends: arrayUnion(ownerEmail) });
+            document.getElementById('note-modal').style.display = 'flex';
+            document.getElementById('modal-container').classList.remove('edit-mode');
+            document.getElementById('modal-container').classList.add('view-mode');
+            
+            document.getElementById('modal-title').innerText = note.title;
+            const body = document.getElementById('modal-content-display');
+            body.innerHTML = '';
+
+            if(note.type === 'text') {
+                body.innerHTML = note.content;
+                body.contentEditable = false;
+            } else {
+                body.contentEditable = false;
+                renderListInModal(note);
+            }
+
+            // History render
+            const hList = document.getElementById('history-list');
+            hList.innerHTML = note.history.slice().reverse().map(h => `
+                <div class="history-item"><b>${new Date(h.time).toLocaleString('hu-HU')}</b> - ${h.user.split('@')[0]}: ${h.action}</div>
+            `).join('');
         };
 
-        window.declineInvite = async (noteId) => {
-            const noteRef = doc(db, "notes", noteId);
-            const noteSnap = await getDoc(noteRef);
-            const newPending = noteSnap.data().pendingUsers.filter(e => e !== user.email);
-            await updateDoc(noteRef, { pendingUsers: newPending });
-        };
+        function renderListInModal(note) {
+            const body = document.getElementById('modal-content-display');
+            let total = 0;
+            note.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                if(note.type === 'checklist') {
+                    div.innerHTML = `<input type="checkbox" ${item.checked ? 'checked' : ''} disabled> <span>${item.text}</span>`;
+                } else {
+                    total += item.amount;
+                    div.innerHTML = `<b>${item.amount}</b> <span>${item.text}</span>`;
+                }
+                body.appendChild(div);
+            });
+            if(note.type === 'money') {
+                const tDiv = document.createElement('div');
+                tDiv.className = 'money-total';
+                tDiv.innerHTML = `Összesen: ${total}`;
+                body.appendChild(tDiv);
+            }
+        }
 
-        window.updateNote = async (id, field, val) => {
-            await updateDoc(doc(db, "notes", id), { [field]: val });
-        };
-
-        window.deleteNote = async (id) => {
-            if(confirm("Biztosan törlöd ezt a jegyzetet?")) {
-                await deleteDoc(doc(db, "notes", id));
+        window.enableEditMode = () => {
+            const note = allNotes.find(n => n.id === currentNoteId);
+            document.getElementById('modal-container').classList.remove('view-mode');
+            document.getElementById('modal-container').classList.add('edit-mode');
+            
+            const body = document.getElementById('modal-content-display');
+            if(note.type === 'text') body.contentEditable = true;
+            else {
+                body.innerHTML = '';
+                note.items.forEach(item => addListItem('modal-content-display', item.text, item.checked, item.amount));
+                const addBtn = document.createElement('button');
+                addBtn.innerText = "+ Új sor";
+                addBtn.className = "btn edit-only";
+                addBtn.onclick = () => addListItem('modal-content-display');
+                body.appendChild(addBtn);
             }
         };
+
+        window.saveEdit = async () => {
+            const noteRef = doc(db, "notes", currentNoteId);
+            const body = document.getElementById('modal-content-display');
+            let updateData = { 
+                history: arrayUnion({ user: user.email, time: Date.now(), action: 'Szerkesztve' }) 
+            };
+
+            if(creatorType === 'text') {
+                updateData.content = body.innerHTML;
+            } else {
+                let items = [];
+                const rows = body.querySelectorAll('.list-item');
+                rows.forEach(row => {
+                    if(creatorType === 'checklist') items.push({ text: row.querySelector('input[type="text"]').value, checked: row.querySelector('input[type="checkbox"]').checked });
+                    else items.push({ text: row.querySelector('.m-txt').value, amount: parseFloat(row.querySelector('.m-amt').value) || 0 });
+                });
+                updateData.items = items;
+            }
+
+            await updateDoc(noteRef, updateData);
+            closeModal();
+        };
+
+        window.closeModal = () => {
+            document.getElementById('note-modal').style.display = 'none';
+            currentNoteId = null;
+        };
+
+        window.deleteCurrentNote = async () => {
+            if(confirm("Biztosan törlöd?")) {
+                await deleteDoc(doc(db, "notes", currentNoteId));
+                closeModal();
+            }
+        };
+
     </script>
 </body>
 </html>
