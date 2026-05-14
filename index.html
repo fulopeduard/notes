@@ -23,7 +23,6 @@
             margin: 0; color: var(--text-main); min-height: 100vh;
         }
 
-        /* --- Header & Layout --- */
         header {
             background: var(--surface-color); padding: 15px 30px;
             display: flex; align-items: center; justify-content: space-between;
@@ -33,7 +32,6 @@
 
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
-        /* --- Note Creator --- */
         .note-creator {
             background: var(--surface-color); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 20px; max-width: 550px; margin: 0 auto 30px auto;
@@ -42,11 +40,10 @@
         .type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .type-btn { 
             background: #3c4043; color: white; padding: 5px 12px; 
-            border-radius: 6px; font-size: 12px; opacity: 0.6;
+            border-radius: 6px; font-size: 12px; opacity: 0.6; border: none; cursor: pointer;
         }
         .type-btn.active { opacity: 1; border: 1px solid var(--accent-color); }
 
-        /* --- Grid & Cards --- */
         .notes-grid { column-count: 3; column-gap: 15px; }
         @media (max-width: 800px) { .notes-grid { column-count: 2; } }
         @media (max-width: 500px) { .notes-grid { column-count: 1; } }
@@ -55,11 +52,16 @@
             background: var(--card-bg); color: var(--text-dark);
             border-radius: 10px; padding: 15px; margin-bottom: 15px;
             break-inside: avoid; cursor: pointer; transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .note-card:hover { transform: translateY(-3px); }
+        .note-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
         .note-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        
+        .badge {
+            font-size: 10px; background: rgba(0,0,0,0.1); padding: 2px 6px; 
+            border-radius: 8px; color: #202124; margin-bottom: 8px; display: inline-block; font-weight: bold;
+        }
 
-        /* --- Modal --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); display: none; justify-content: center;
@@ -73,55 +75,55 @@
         }
 
         .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .close-modal { font-size: 24px; cursor: pointer; }
+        .close-modal { font-size: 28px; cursor: pointer; font-weight: bold; }
+        .close-modal:hover { color: #555; }
 
-        /* --- Editor & Lists --- */
-        .rich-editor { min-height: 100px; outline: none; margin-bottom: 15px; line-height: 1.6; }
+        .rich-editor { min-height: 80px; outline: none; margin-bottom: 15px; line-height: 1.6; }
         .list-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .list-item input[type="text"], .list-item input[type="number"] {
-            background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1);
-            padding: 5px; border-radius: 4px; color: var(--text-dark);
+            background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2);
+            padding: 8px; border-radius: 4px; color: var(--text-dark); font-family: inherit;
         }
         .money-total { border-top: 2px solid rgba(0,0,0,0.2); margin-top: 15px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
 
-        /* --- History Section --- */
-        .history-section {
-            margin-top: 30px; padding-top: 15px;
-            border-top: 1px dashed rgba(0,0,0,0.2); font-size: 0.8rem;
-        }
-        .history-item { margin-bottom: 5px; color: #444; }
+        .history-section { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.3); font-size: 0.85rem; }
+        .history-item { margin-bottom: 5px; color: #333; }
 
-        /* --- Buttons --- */
-        .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; }
-        .btn-primary { background: #1a73e8; color: white; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s;}
+        .btn-primary { background: var(--accent-color); color: #000; }
+        .btn-primary:hover { filter: brightness(1.1); }
         .btn-save { background: #188038; color: white; margin-top: 10px; }
-        .toolbar { display: none; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; }
+        .btn-save:hover { background: #13652c; }
+        
+        .toolbar { display: none; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.2); padding-bottom: 10px; }
+        .toolbar button { background: rgba(0,0,0,0.1); border:none; padding:5px 10px; border-radius:4px; cursor:pointer;}
+        .toolbar button:hover { background: rgba(0,0,0,0.2); }
         
         .edit-mode .toolbar { display: flex; }
         .edit-mode .read-only { display: none; }
         .view-mode .edit-only { display: none; }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="auth-container" class="container" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <div style="background: var(--surface-color); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
+        <div style="background: var(--surface-color); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color); width: 100%; max-width: 380px;">
             <h2 style="color: var(--accent-color)">✨ CloudKeep Pro</h2>
-            <input type="email" id="email-input" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
-            <input type="password" id="password-input" placeholder="Jelszó" style="width:100%; padding:10px; margin-bottom:20px; border-radius:5px; border:none;">
+            <input type="email" id="email-input" placeholder="Email cím" style="width:100%; padding:12px; margin-bottom:10px; border-radius:5px; border:none; background: rgba(255,255,255,0.1); color:white; box-sizing:border-box;">
+            <input type="password" id="password-input" placeholder="Jelszó (min 6 kar.)" style="width:100%; padding:12px; margin-bottom:20px; border-radius:5px; border:none; background: rgba(255,255,255,0.1); color:white; box-sizing:border-box;">
             <button class="btn btn-primary" id="login-btn" style="width:100%">Bejelentkezés</button>
-            <button id="reg-btn" style="background:none; color:grey; border:none; margin-top:10px; cursor:pointer">Regisztráció</button>
+            <button id="reg-btn" style="background:none; color:var(--text-muted); border:none; margin-top:15px; cursor:pointer">Regisztráció</button>
         </div>
     </div>
 
     <div id="app-container" class="hidden">
         <header>
-            <div style="font-weight:bold; font-size: 20px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
+            <div style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
             <div>
-                <span id="user-mail" style="font-size: 12px; margin-right: 15px;"></span>
-                <button onclick="logout()" class="btn" style="background:#3c4043; color:white; font-size:12px;">Kilépés</button>
+                <span id="user-mail" style="font-size: 13px; margin-right: 15px;"></span>
+                <button onclick="logout()" class="btn" style="background:#3c4043; color:white; font-size:12px;">Kijelentkezés</button>
             </div>
         </header>
 
@@ -132,14 +134,15 @@
                     <button class="type-btn" onclick="setCreatorType('checklist', this)">Checklist</button>
                     <button class="type-btn" onclick="setCreatorType('money', this)">Pénzügy</button>
                 </div>
-                <input type="text" id="new-title" placeholder="Cím..." style="background:transparent; border:none; font-size:18px; font-weight:bold; color:white; width:100%; outline:none;">
+                
+                <input type="text" id="new-title" placeholder="Jegyzet címe..." style="background:transparent; border:none; font-size:18px; font-weight:bold; color:white; width:100%; outline:none;">
                 
                 <div id="creator-content-area" style="margin-top:15px;">
-                    <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white;" placeholder="Írj valamit..."></div>
+                    <div id="text-creator" class="rich-editor" contenteditable="true" style="color:white; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" placeholder="Írj valamit... (Félkövérhez nyomj Ctrl+B-t)"></div>
                     
-                    <div id="list-creator" class="hidden">
+                    <div id="list-creator" class="hidden" style="background:rgba(255,255,255,0.9); padding:10px; border-radius:8px;">
                         <div id="list-items-container"></div>
-                        <button onclick="addListItem('list-items-container')" class="btn" style="background:none; color:var(--accent-color); font-size:12px;">+ Új sor</button>
+                        <button onclick="addListItem('list-items-container', 'creator')" class="btn" style="background:none; color:#1a73e8; font-size:13px; margin-top:10px;">+ Új sor hozzáadása</button>
                     </div>
                 </div>
 
@@ -155,15 +158,14 @@
     <div class="modal-overlay" id="note-modal">
         <div class="modal-content" id="modal-container">
             <div class="modal-header">
-                <h2 id="modal-title" style="margin:0;"></h2>
+                <h2 id="modal-title" style="margin:0; outline:none; flex:1;"></h2>
                 <span class="close-modal" onclick="closeModal()">×</span>
             </div>
             
             <div id="modal-body">
                 <div class="toolbar" id="modal-toolbar">
-                    <button onclick="document.execCommand('bold')"><b>B</b></button>
-                    <button onclick="document.execCommand('underline')"><u>U</u></button>
-                    <input type="color" onchange="document.execCommand('foreColor', false, this.value)">
+                    <button onclick="document.execCommand('bold')"><b>Félkövér</b></button>
+                    <button onclick="document.execCommand('underline')"><u>Aláhúzott</u></button>
                 </div>
 
                 <div id="modal-content-display" class="rich-editor"></div>
@@ -174,7 +176,7 @@
                     <button id="edit-btn" class="btn btn-primary read-only" onclick="enableEditMode()">Szerkesztés</button>
                     <button id="save-edit-btn" class="btn btn-save edit-only" onclick="saveEdit()">Változtatások mentése</button>
                 </div>
-                <button onclick="deleteCurrentNote()" class="btn" style="background:none; color:#d93025;">Törlés</button>
+                <button onclick="deleteCurrentNote()" class="btn" style="background:rgba(217, 48, 37, 0.1); color:#d93025;">Törlés</button>
             </div>
 
             <div class="history-section" id="modal-history">
@@ -186,7 +188,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, arrayUnion, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -203,17 +205,30 @@
         const auth = getAuth(app);
 
         let user = null;
-        let creatorType = 'text';
+        let creatorType = 'text';       // A főoldali "Új jegyzet" típusa
+        let currentModalType = 'text';  // A megnyitott jegyzet típusa
         let currentNoteId = null;
-        let allNotes = [];
+        
+        let myNotesMap = new Map();
+        let sharedNotesMap = new Map();
 
         // --- AUTH ---
         window.logout = () => signOut(auth);
+        
         document.getElementById('login-btn').onclick = () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).catch(err => alert(err.message));
+            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
+            .catch(err => alert("Hibás email vagy jelszó."));
         };
+
         document.getElementById('reg-btn').onclick = () => {
-            createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).then(() => setDoc(doc(db, "users", auth.currentUser.email), {friends:[]}));
+            const email = document.getElementById('email-input').value;
+            const pw = document.getElementById('password-input').value;
+            if(pw.length < 6) return alert("A jelszó min. 6 karakter kell legyen!");
+            
+            createUserWithEmailAndPassword(auth, email, pw)
+            .then((cred) => {
+                setDoc(doc(db, "users", cred.user.email), {friends:[]});
+            }).catch(err => alert("Regisztrációs hiba: " + err.message));
         };
 
         onAuthStateChanged(auth, u => {
@@ -229,7 +244,7 @@
             }
         });
 
-        // --- TÍPUS KEZELÉS ---
+        // --- TÍPUS KEZELÉS (Új Jegyzet) ---
         window.setCreatorType = (type, btn) => {
             creatorType = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -238,148 +253,219 @@
             document.getElementById('text-creator').classList.add('hidden');
             document.getElementById('list-creator').classList.add('hidden');
             
-            if(type === 'text') document.getElementById('text-creator').classList.remove('hidden');
-            else {
+            if(type === 'text') {
+                document.getElementById('text-creator').classList.remove('hidden');
+            } else {
                 document.getElementById('list-creator').classList.remove('hidden');
                 document.getElementById('list-items-container').innerHTML = '';
-                addListItem('list-items-container');
+                addListItem('list-items-container', 'creator');
             }
         };
 
-        window.addListItem = (containerId, val = '', checked = false, amount = 0) => {
+        // Dinamikus sor hozzáadása
+        window.addListItem = (containerId, mode, val = '', checked = false, amount = '') => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            if(creatorType === 'checklist' || (containerId === 'modal-content-display' && creatorType === 'checklist')){
-                div.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''}> <input type="text" value="${val}" style="flex:1">`;
-            } else {
-                div.innerHTML = `<input type="number" value="${amount}" style="width:70px" class="m-amt"> <input type="text" value="${val}" style="flex:1" class="m-txt">`;
+            
+            // Ha épp új jegyzetet írunk, a creatorType-ot nézzük, ha a modalban vagyunk, a currentModalType-ot
+            const activeType = (mode === 'creator') ? creatorType : currentModalType;
+
+            if(activeType === 'checklist'){
+                div.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''}> <input type="text" placeholder="Elem neve..." value="${val}" style="flex:1">`;
+            } else if (activeType === 'money') {
+                div.innerHTML = `<input type="number" placeholder="Összeg" value="${amount}" style="width:80px" class="m-amt"> <input type="text" placeholder="Leírás..." value="${val}" style="flex:1" class="m-txt">`;
             }
-            document.getElementById(containerId).appendChild(div);
+            
+            const container = document.getElementById(containerId);
+            const addBtn = container.querySelector('button');
+            if(addBtn) container.insertBefore(div, addBtn);
+            else container.appendChild(div);
         };
 
-        // --- MENTÉS ---
+        // --- ÚJ JEGYZET MENTÉSE ---
         document.getElementById('save-note').onclick = async () => {
             const title = document.getElementById('new-title').value;
-            let content = null;
+            let content = "";
             let items = [];
 
-            if(creatorType === 'text') content = document.getElementById('text-creator').innerHTML;
-            else {
+            if(creatorType === 'text') {
+                content = document.getElementById('text-creator').innerHTML;
+                if(!title && (!content || content === '<br>')) return;
+            } else {
                 const rows = document.querySelectorAll('#list-items-container .list-item');
                 rows.forEach(row => {
-                    if(creatorType === 'checklist') items.push({ text: row.querySelector('input[type="text"]').value, checked: row.querySelector('input[type="checkbox"]').checked });
-                    else items.push({ text: row.querySelector('.m-txt').value, amount: parseFloat(row.querySelector('.m-amt').value) || 0 });
+                    if(creatorType === 'checklist') {
+                        const txt = row.querySelector('input[type="text"]').value;
+                        if(txt) items.push({ text: txt, checked: row.querySelector('input[type="checkbox"]').checked });
+                    } else {
+                        const txt = row.querySelector('.m-txt').value;
+                        const amt = parseFloat(row.querySelector('.m-amt').value) || 0;
+                        if(txt || amt !== 0) items.push({ text: txt, amount: amt });
+                    }
                 });
+                if(!title && items.length === 0) return;
             }
 
             const noteData = {
-                title, type: creatorType, content, items,
-                owner: user.email, sharedWith: [], pendingUsers: [],
+                title: title, 
+                type: creatorType, 
+                content: content, 
+                items: items,
+                owner: user.email, 
+                sharedWith: [], 
+                pendingUsers: [],
                 createdAt: Date.now(),
                 history: [{ user: user.email, time: Date.now(), action: 'Létrehozva' }]
             };
 
             await addDoc(collection(db, "notes"), noteData);
-            resetCreator();
-        };
-
-        function resetCreator(){
+            
+            // Reset
             document.getElementById('new-title').value = '';
             document.getElementById('text-creator').innerHTML = '';
             document.getElementById('list-items-container').innerHTML = '';
-            addListItem('list-items-container');
-        }
+            if(creatorType !== 'text') addListItem('list-items-container', 'creator');
+        };
 
-        // --- LISTENING & RENDERING ---
+        // --- ADATBÁZIS FIGYELÉSE ---
         function initApp() {
-            const q = query(collection(db, "notes"), where("owner", "==", user.email));
-            onSnapshot(q, snap => {
-                const grid = document.getElementById('notes-grid');
-                grid.innerHTML = '';
-                allNotes = [];
-                snap.forEach(d => {
-                    const note = {id: d.id, ...d.data()};
-                    allNotes.push(note);
-                    const card = document.createElement('div');
-                    card.className = 'note-card';
-                    card.onclick = () => openNote(note.id);
-                    
-                    let preview = "";
-                    if(note.type === 'text') preview = note.content.substring(0, 50) + "...";
-                    else if(note.type === 'checklist') preview = `📝 Checklist (${note.items.length} elem)`;
-                    else preview = `💰 Pénzügy (Össz: ${note.items.reduce((acc, curr) => acc + curr.amount, 0)})`;
+            const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
+            const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
 
-                    card.innerHTML = `<h3>${note.title || 'Névtelen'}</h3><div style="font-size:0.9rem; opacity:0.8;">${preview}</div>`;
-                    grid.appendChild(card);
-                });
+            onSnapshot(qSaját, snap => {
+                myNotesMap.clear();
+                snap.forEach(d => myNotesMap.set(d.id, {id: d.id, ...d.data()}));
+                renderAllNotes();
+            });
+
+            onSnapshot(qMegosztott, snap => {
+                sharedNotesMap.clear();
+                snap.forEach(d => sharedNotesMap.set(d.id, {id: d.id, ...d.data()}));
+                renderAllNotes();
             });
         }
 
-        // --- MODAL LOGIC ---
+        function renderAllNotes() {
+            const grid = document.getElementById('notes-grid');
+            grid.innerHTML = '';
+            
+            const combined = [...myNotesMap.values(), ...sharedNotesMap.values()]
+                .sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+            
+            combined.forEach(note => {
+                // BIZTONSÁGI VISSZAESÉS RÉGI JEGYZETEKHEZ
+                const safeType = note.type || 'text';
+                const safeItems = note.items || [];
+                
+                const card = document.createElement('div');
+                card.className = 'note-card';
+                card.onclick = () => openNote(note.id);
+                
+                let preview = "";
+                if(safeType === 'text') {
+                    // HTML tag-ek eltávolítása az előnézetből
+                    const plainText = (note.content || "").replace(/<[^>]*>?/gm, '');
+                    preview = plainText.substring(0, 50) + (plainText.length > 50 ? "..." : "");
+                }
+                else if(safeType === 'checklist') {
+                    preview = `📝 Checklist (${safeItems.length} elem)`;
+                }
+                else {
+                    const sum = safeItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+                    preview = `💰 Pénzügy (Összesen: ${sum})`;
+                }
+
+                const badgeHtml = note.owner === user.email ? '' : `<div class="badge">👥 Tőle: ${note.owner.split('@')[0]}</div>`;
+
+                card.innerHTML = `
+                    ${badgeHtml}
+                    <h3>${note.title || 'Névtelen'}</h3>
+                    <div style="font-size:0.9rem; opacity:0.8;">${preview}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- MODAL LOGIKA (Megtekintés / Szerkesztés) ---
         window.openNote = (id) => {
             currentNoteId = id;
-            const note = allNotes.find(n => n.id === id);
-            creatorType = note.type; // Modálisban is követjük a típust
+            const note = myNotesMap.get(id) || sharedNotesMap.get(id);
+            currentModalType = note.type || 'text'; // Régi jegyzetek alapból 'text'
             
-            document.getElementById('note-modal').style.display = 'flex';
-            document.getElementById('modal-container').classList.remove('edit-mode');
-            document.getElementById('modal-container').classList.add('view-mode');
-            
-            document.getElementById('modal-title').innerText = note.title;
+            const modal = document.getElementById('note-modal');
+            const container = document.getElementById('modal-container');
             const body = document.getElementById('modal-content-display');
+            const titleEl = document.getElementById('modal-title');
+            
+            modal.style.display = 'flex';
+            container.className = 'modal-content view-mode';
+            
+            titleEl.innerText = note.title || '';
+            titleEl.contentEditable = false;
             body.innerHTML = '';
 
-            if(note.type === 'text') {
-                body.innerHTML = note.content;
+            // Tartalom renderelése "Csak olvasható" módban
+            if(currentModalType === 'text') {
+                body.innerHTML = note.content || '';
                 body.contentEditable = false;
             } else {
                 body.contentEditable = false;
-                renderListInModal(note);
+                let total = 0;
+                (note.items || []).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'list-item';
+                    if(currentModalType === 'checklist') {
+                        div.innerHTML = `<input type="checkbox" ${item.checked ? 'checked' : ''} disabled> <span>${item.text}</span>`;
+                    } else {
+                        total += (item.amount || 0);
+                        div.innerHTML = `<b style="width:80px; display:inline-block">${item.amount || 0}</b> <span>${item.text}</span>`;
+                    }
+                    body.appendChild(div);
+                });
+                if(currentModalType === 'money') {
+                    const tDiv = document.createElement('div');
+                    tDiv.className = 'money-total';
+                    tDiv.innerHTML = `Összesen: ${total}`;
+                    body.appendChild(tDiv);
+                }
             }
 
-            // History render
+            // Előzmények renderelése (biztonságosan)
             const hList = document.getElementById('history-list');
-            hList.innerHTML = note.history.slice().reverse().map(h => `
-                <div class="history-item"><b>${new Date(h.time).toLocaleString('hu-HU')}</b> - ${h.user.split('@')[0]}: ${h.action}</div>
-            `).join('');
+            const historyData = note.history || [];
+            if(historyData.length > 0) {
+                hList.innerHTML = historyData.slice().reverse().map(h => `
+                    <div class="history-item"><b>${new Date(h.time).toLocaleString('hu-HU')}</b> - ${(h.user || 'Ismeretlen').split('@')[0]}: ${h.action}</div>
+                `).join('');
+            } else {
+                hList.innerHTML = `<div class="history-item">Nincsenek elérhető előzmények (régi jegyzet).</div>`;
+            }
         };
 
-        function renderListInModal(note) {
-            const body = document.getElementById('modal-content-display');
-            let total = 0;
-            note.items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                if(note.type === 'checklist') {
-                    div.innerHTML = `<input type="checkbox" ${item.checked ? 'checked' : ''} disabled> <span>${item.text}</span>`;
-                } else {
-                    total += item.amount;
-                    div.innerHTML = `<b>${item.amount}</b> <span>${item.text}</span>`;
-                }
-                body.appendChild(div);
-            });
-            if(note.type === 'money') {
-                const tDiv = document.createElement('div');
-                tDiv.className = 'money-total';
-                tDiv.innerHTML = `Összesen: ${total}`;
-                body.appendChild(tDiv);
-            }
-        }
-
         window.enableEditMode = () => {
-            const note = allNotes.find(n => n.id === currentNoteId);
-            document.getElementById('modal-container').classList.remove('view-mode');
-            document.getElementById('modal-container').classList.add('edit-mode');
+            const note = myNotesMap.get(currentNoteId) || sharedNotesMap.get(currentNoteId);
+            const container = document.getElementById('modal-container');
+            container.classList.remove('view-mode');
+            container.classList.add('edit-mode');
+            
+            document.getElementById('modal-title').contentEditable = true;
+            document.getElementById('modal-title').focus();
             
             const body = document.getElementById('modal-content-display');
-            if(note.type === 'text') body.contentEditable = true;
-            else {
+            
+            if(currentModalType === 'text') {
+                body.contentEditable = true;
+            } else {
                 body.innerHTML = '';
-                note.items.forEach(item => addListItem('modal-content-display', item.text, item.checked, item.amount));
+                (note.items || []).forEach(item => addListItem('modal-content-display', 'modal', item.text, item.checked, item.amount));
+                
                 const addBtn = document.createElement('button');
-                addBtn.innerText = "+ Új sor";
+                addBtn.innerText = "+ Új sor hozzáadása";
                 addBtn.className = "btn edit-only";
-                addBtn.onclick = () => addListItem('modal-content-display');
+                addBtn.style.background = "rgba(0,0,0,0.1)";
+                addBtn.style.color = "#000";
+                addBtn.style.marginTop = "10px";
+                addBtn.onclick = () => addListItem('modal-content-display', 'modal');
                 body.appendChild(addBtn);
             }
         };
@@ -387,18 +473,27 @@
         window.saveEdit = async () => {
             const noteRef = doc(db, "notes", currentNoteId);
             const body = document.getElementById('modal-content-display');
+            const title = document.getElementById('modal-title').innerText;
+            
             let updateData = { 
+                title: title,
                 history: arrayUnion({ user: user.email, time: Date.now(), action: 'Szerkesztve' }) 
             };
 
-            if(creatorType === 'text') {
+            if(currentModalType === 'text') {
                 updateData.content = body.innerHTML;
             } else {
                 let items = [];
                 const rows = body.querySelectorAll('.list-item');
                 rows.forEach(row => {
-                    if(creatorType === 'checklist') items.push({ text: row.querySelector('input[type="text"]').value, checked: row.querySelector('input[type="checkbox"]').checked });
-                    else items.push({ text: row.querySelector('.m-txt').value, amount: parseFloat(row.querySelector('.m-amt').value) || 0 });
+                    if(currentModalType === 'checklist') {
+                        const txt = row.querySelector('input[type="text"]').value;
+                        if(txt) items.push({ text: txt, checked: row.querySelector('input[type="checkbox"]').checked });
+                    } else {
+                        const txt = row.querySelector('.m-txt').value;
+                        const amt = parseFloat(row.querySelector('.m-amt').value) || 0;
+                        if(txt || amt !== 0) items.push({ text: txt, amount: amt });
+                    }
                 });
                 updateData.items = items;
             }
@@ -413,7 +508,7 @@
         };
 
         window.deleteCurrentNote = async () => {
-            if(confirm("Biztosan törlöd?")) {
+            if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
                 await deleteDoc(doc(db, "notes", currentNoteId));
                 closeModal();
             }
