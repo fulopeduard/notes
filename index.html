@@ -49,7 +49,7 @@
             .user-email-text { 
                 max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
             }
-            .header-btn-text { display: none; }
+            .header-btn-text { display: none; } /* Mobilon csak ikonok */
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
@@ -221,6 +221,7 @@
 </head>
 <body>
 
+    <!-- Hitelesítés -->
     <div id="auth-container" class="container" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
         <div style="background: var(--surface-color); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color); width: 100%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <h2 style="color: var(--accent-color)">✨ CloudKeep Pro</h2>
@@ -231,6 +232,7 @@
         </div>
     </div>
 
+    <!-- Fő alkalmazás -->
     <div id="app-container" class="hidden">
         <header>
             <div class="app-title" style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
@@ -248,6 +250,7 @@
         </header>
 
         <div class="container">
+            <!-- Plusz gomb (Dropdown) -->
             <div class="add-note-wrapper" id="add-note-wrapper">
                 <button class="add-note-btn" onclick="toggleDropdown(event)">+</button>
                 <div class="type-dropdown" id="type-dropdown">
@@ -257,6 +260,7 @@
                 </div>
             </div>
 
+            <!-- Jegyzetlétrehozó -->
             <div class="note-creator" id="note-creator-panel">
                 <div class="type-selector">
                     <button class="type-btn" data-type="text" onclick="setCreatorType('text')">Szöveg</button>
@@ -286,10 +290,12 @@
                 </div>
             </div>
 
+            <!-- Jegyzetek Grid -->
             <div class="notes-grid" id="notes-grid"></div>
         </div>
     </div>
 
+    <!-- Jegyzet Modal -->
     <div class="modal-overlay" id="note-modal">
         <div class="modal-content view-mode" id="modal-container">
             <div id="history-banner" class="hidden">
@@ -326,6 +332,7 @@
         </div>
     </div>
 
+    <!-- Barátok Modal -->
     <div class="modal-overlay" id="friends-modal">
         <div class="modal-content dark-modal" style="max-width: 500px;">
             <div class="modal-header">
@@ -353,6 +360,7 @@
         </div>
     </div>
 
+    <!-- Megosztás Modal -->
     <div class="modal-overlay" id="share-modal">
         <div class="modal-content dark-modal" style="max-width: 500px;">
             <div class="modal-header">
@@ -375,6 +383,7 @@
         </div>
     </div>
 
+    <!-- BEÁLLÍTÁSOK MODAL -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content dark-modal" style="max-width: 600px; min-height: 400px;">
             <div class="modal-header">
@@ -385,13 +394,16 @@
                 <span class="close-modal" onclick="closeModal('settings-modal')">×</span>
             </div>
             
+            <!-- 1. Főmenü -->
             <div id="settings-main-view">
                 <button class="menu-item-btn" onclick="openSettingsThemes()">
                     <span>🎨 Témák</span>
                     <span>➡</span>
                 </button>
-                </div>
+                <!-- Később ide jöhetnek más beállítások -->
+            </div>
 
+            <!-- 2. Témák Lista Nézet -->
             <div id="settings-themes-view" class="hidden">
                 <button class="btn btn-primary" style="width:100%; padding:15px; margin-bottom: 25px; font-size: 16px;" onclick="openSettingsEditor()">➕ Új téma létrehozása</button>
                 
@@ -402,6 +414,7 @@
                 <div id="saved-themes-list"></div>
             </div>
 
+            <!-- 3. Téma Szerkesztő (Új téma) Nézet -->
             <div id="settings-editor-view" class="hidden">
                 <div style="background:rgba(0,0,0,0.2); padding:20px; border-radius:10px; margin-bottom: 20px;">
                     <h4 style="margin-top:0; margin-bottom:10px; color:var(--accent-color);" id="preview-title-text">Élő Előnézet (Saját)</h4>
@@ -415,11 +428,11 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div class="color-picker-wrapper">
                         <label>Saját jegyzetek színe:</label>
-                        <input type="color" id="picker-private" oninput="updatePreviewColors(false)">
+                        <input type="color" id="picker-private" oninput="updatePreviewColors(false)" onclick="updatePreviewColors(false)">
                     </div>
                     <div class="color-picker-wrapper">
                         <label>Megosztott jegyzetek színe:</label>
-                        <input type="color" id="picker-shared" oninput="updatePreviewColors(true)">
+                        <input type="color" id="picker-shared" oninput="updatePreviewColors(true)" onclick="updatePreviewColors(true)">
                     </div>
                 </div>
 
@@ -462,7 +475,7 @@
         
         let userThemes = [];
         let activeTheme = null; 
-        let settingsCurrentView = 'main'; // 'main', 'themes', 'editor'
+        let settingsCurrentView = 'main';
 
         function linkifyHTML(htmlString) {
             if (!htmlString) return '';
@@ -635,7 +648,7 @@
             hideCreatorPanel();
         };
 
-        // --- FELHASZNÁLÓI PROFIL & TÉMÁK (ÚJ STRUKTÚRA) ---
+        // --- FELHASZNÁLÓI PROFIL & TÉMÁK ---
         function initUserProfile() {
             onSnapshot(doc(db, "users", user.email), docSnap => {
                 if(docSnap.exists()) {
@@ -680,7 +693,6 @@
             }
         }
 
-        // Settings navigáció
         window.openSettingsModal = () => {
             document.getElementById('settings-modal').style.display = 'flex';
             openSettingsMain();
@@ -715,11 +727,9 @@
             document.getElementById('settings-title').innerText = "➕ Új Téma";
             document.getElementById('settings-back-btn').classList.remove('hidden');
             
-            // Picker alapértékek beállítása
             document.getElementById('picker-private').value = activeTheme ? activeTheme.privateColor : '#d3b212';
             document.getElementById('picker-shared').value = activeTheme ? activeTheme.sharedColor : '#b6ff1e';
             
-            // Alapból mutassuk a privát előnézetet
             updatePreviewColors(false);
         };
 
@@ -728,7 +738,6 @@
             else if(settingsCurrentView === 'editor') openSettingsThemes();
         };
 
-        // Automatikus okos előnézet
         window.updatePreviewColors = (isSharedView) => {
             const pColor = document.getElementById('picker-private').value;
             const sColor = document.getElementById('picker-shared').value;
@@ -765,7 +774,7 @@
             });
             
             document.getElementById('new-theme-name').value = '';
-            openSettingsThemes(); // Visszavált a listára mentés után
+            openSettingsThemes(); 
         };
 
         window.applyTheme = async (privateColor, sharedColor) => {
@@ -782,7 +791,6 @@
                     customThemes: arrayRemove(themeObj) 
                 });
                 
-                // Ha az aktív témát töröltük, álljunk vissza alapra
                 if(activeTheme && activeTheme.privateColor === themeObj.privateColor && activeTheme.sharedColor === themeObj.sharedColor) {
                     resetToDefaultTheme();
                 }
@@ -795,10 +803,28 @@
 
         function renderThemesList() {
             const tList = document.getElementById('saved-themes-list');
-            if(userThemes.length === 0) {
-                tList.innerHTML = `<div style="opacity:0.6; font-size:14px; padding:10px;">Még nincsenek elmentett témáid. Kattints felül az "Új téma létrehozása" gombra!</div>`;
-            } else {
-                tList.innerHTML = userThemes.map(t => {
+            let listHTML = '';
+
+            // 1. BEÉPÍTETT TÉMA: Rózsaszín / Lila
+            const builtInTheme = { name: 'Rózsaszín / Lila (Beépített)', privateColor: '#fdbbf4', sharedColor: '#d07adf' };
+            const isBuiltInActive = activeTheme && activeTheme.privateColor === builtInTheme.privateColor && activeTheme.sharedColor === builtInTheme.sharedColor;
+            
+            listHTML += `
+                <div class="friend-row" style="${isBuiltInActive ? 'border-left: 4px solid var(--accent-color);' : ''}">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:18px; height:18px; border-radius:50%; background:${builtInTheme.privateColor}; border:1px solid rgba(255,255,255,0.3);" title="Saját"></div>
+                        <div style="width:18px; height:18px; border-radius:50%; background:${builtInTheme.sharedColor}; border:1px solid rgba(255,255,255,0.3);" title="Megosztott"></div>
+                        <span style="${isBuiltInActive ? 'font-weight:bold; color:var(--accent-color);' : ''}">${builtInTheme.name}</span>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        ${isBuiltInActive ? '<span style="font-size:12px; color:var(--success-color); align-self:center; margin-right:5px;">Aktiválva</span>' : `<button onclick="applyTheme('${builtInTheme.privateColor}', '${builtInTheme.sharedColor}')" class="btn btn-primary" style="padding:5px 10px; font-size:12px;">Alkalmaz</button>`}
+                    </div>
+                </div>
+            `;
+
+            // 2. FELHASZNÁLÓ SAJÁT TÉMÁI
+            if(userThemes.length > 0) {
+                listHTML += userThemes.map(t => {
                     const isActive = activeTheme && activeTheme.privateColor === t.privateColor && activeTheme.sharedColor === t.sharedColor;
                     const borderStyle = isActive ? 'border-left: 4px solid var(--accent-color);' : '';
                     
@@ -816,7 +842,10 @@
                     </div>
                 `}).join('');
             }
+            
+            tList.innerHTML = listHTML;
         }
+
         // --- BARÁT RENDSZER ---
         function renderFriendsUI() {
             const fList = document.getElementById('friends-list');
