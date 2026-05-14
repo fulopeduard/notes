@@ -66,6 +66,7 @@
             font-size: 0.95rem; opacity: 0.85; line-height: 1.5;
             display: -webkit-box; -webkit-line-clamp: 6; 
             -webkit-box-orient: vertical; overflow: hidden;
+            word-wrap: break-word; /* Hosszú szavak ne lógjanak ki */
         }
         .preview-list-item { margin-bottom: 4px; display: flex; gap: 6px; }
 
@@ -82,7 +83,6 @@
             display: flex; flex-direction: column;
         }
         
-        /* Új Modal stílusok a barátoknak és megosztásnak (sötét téma) */
         .modal-content.dark-modal {
             background: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color);
         }
@@ -123,7 +123,6 @@
 
         #history-banner { background: #fbbc04; color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Kártya megosztás gomb (gyorselérés) */
         .card-share-btn {
             position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.1);
             border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 14px;
@@ -131,7 +130,6 @@
         }
         .card-share-btn:hover { background: rgba(0,0,0,0.3); color: white; }
 
-        /* Barátok Lista Dizájn */
         .friend-row {
             display: flex; justify-content: space-between; align-items: center;
             background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px;
@@ -273,12 +271,11 @@
             
             <div id="share-friends-section">
                 <p style="margin-top:0; font-size:14px; opacity:0.8;">Oszd meg egy kattintással a barátaiddal:</p>
-                <div class="share-grid" id="share-friends-grid">
-                    </div>
+                <div class="share-grid" id="share-friends-grid"></div>
             </div>
 
             <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <p style="margin-top:0; font-size:14px; opacity:0.8;">Vagy oszd meg e-mail cím alapján (Ha nem barátod, engedélyt fog kapni):</p>
+                <p style="margin-top:0; font-size:14px; opacity:0.8;">Vagy oszd meg e-mail cím alapján:</p>
                 <div style="display:flex; gap:10px;">
                     <input type="email" id="share-email-input" placeholder="E-mail cím..." style="background:rgba(0,0,0,0.3); border:none; padding:10px; border-radius:6px; color:white; flex:1; margin:0;">
                     <button onclick="executeShare(document.getElementById('share-email-input').value)" class="btn btn-primary">Megosztás</button>
@@ -314,11 +311,9 @@
         let myNotesMap = new Map();
         let sharedNotesMap = new Map();
         
-        // Barát rendszer változók
         let myFriends = [];
         let incomingRequests = [];
 
-        // --- AUTH ---
         window.logout = () => signOut(auth);
         
         document.getElementById('login-btn').onclick = () => {
@@ -351,7 +346,6 @@
             }
         });
 
-        // --- TÍPUS KEZELÉS (Közös) ---
         window.setCreatorType = (type, btn) => {
             creatorType = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -388,7 +382,6 @@
             else container.appendChild(div);
         };
 
-        // --- ÚJ JEGYZET MENTÉSE ---
         document.getElementById('save-note').onclick = async () => {
             const title = document.getElementById('new-title').value;
             let content = "";
@@ -429,9 +422,7 @@
             if(creatorType !== 'text') addListItem('list-items-container', 'creator');
         };
 
-        // --- BARÁT RENDSZER LOGIKA ---
         function initFriendsSystem() {
-            // Saját barátlista figyelése
             onSnapshot(doc(db, "users", user.email), docSnap => {
                 if(docSnap.exists()) {
                     myFriends = docSnap.data().friends || [];
@@ -441,7 +432,6 @@
                 }
             });
 
-            // Beérkező baráti kérelmek figyelése
             const reqQuery = query(collection(db, "friendRequests"), where("to", "==", user.email));
             onSnapshot(reqQuery, snap => {
                 incomingRequests = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -460,7 +450,6 @@
         }
 
         function renderFriendsUI() {
-            // Barátlista renderelése
             const fList = document.getElementById('friends-list');
             if(myFriends.length === 0) {
                 fList.innerHTML = `<div style="opacity:0.6; font-size:14px;">Még nincsenek barátaid. Küldj meghívót fent!</div>`;
@@ -473,7 +462,6 @@
                 `).join('');
             }
 
-            // Kérelmek renderelése
             const rList = document.getElementById('requests-list');
             rList.innerHTML = incomingRequests.map(req => `
                 <div class="friend-row" style="background:rgba(242, 139, 130, 0.1);">
@@ -499,7 +487,6 @@
         };
 
         window.acceptFriendRequest = async (reqId, fromEmail) => {
-            // Kölcsönös hozzáadás
             await updateDoc(doc(db, "users", user.email), { friends: arrayUnion(fromEmail) });
             await updateDoc(doc(db, "users", fromEmail), { friends: arrayUnion(user.email) });
             await deleteDoc(doc(db, "friendRequests", reqId));
@@ -516,9 +503,8 @@
             }
         };
 
-        // --- MEGOSZTÁS LOGIKA (Új ablak) ---
         window.openShareModal = (noteId, event) => {
-            if(event) event.stopPropagation(); // Ne nyissa meg a jegyzetet, ha a gombra kattint
+            if(event) event.stopPropagation(); 
             currentShareNoteId = noteId;
             document.getElementById('share-email-input').value = '';
             
@@ -540,19 +526,16 @@
 
             const noteId = currentShareNoteId;
             
-            // Ha a listámban van, azonnal megosztódik
             if (myFriends.includes(targetEmail)) {
                 await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayUnion(targetEmail) });
                 alert(`Sikeresen megosztva vele: ${targetEmail}`);
             } else {
-                // Ha nincs, akkor engedélykérést/meghívót küldünk a jegyzetre
                 await updateDoc(doc(db, "notes", noteId), { pendingUsers: arrayUnion(targetEmail) });
                 alert(`Meghívó elküldve neki: ${targetEmail}`);
             }
             closeModal('share-modal');
         };
 
-        // --- JEGYZET RENDERELÉS ---
         function initApp() {
             const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
             const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
@@ -588,8 +571,18 @@
                 let previewHtml = "";
                 
                 if(safeType === 'text') {
-                    const plainText = (note.content || "").replace(/<[^>]*>?/gm, '');
-                    previewHtml = plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "");
+                    // SORtörések megőrzése az előnézetben a HTML tisztítás előtt
+                    let plainText = (note.content || "")
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/div>/gi, '\n')
+                        .replace(/<\/p>/gi, '\n')
+                        .replace(/<[^>]*>?/gm, '')
+                        .replace(/\n+/g, '\n')
+                        .trim();
+                        
+                    let truncated = plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "");
+                    // Visszaalakítjuk a sortöréseket <br>-re a megjelenítéshez
+                    previewHtml = truncated.replace(/\n/g, '<br>');
                 }
                 else if(safeType === 'checklist') {
                     const itemsToShow = safeItems.slice(0, 3);
@@ -616,7 +609,6 @@
             });
         }
 
-        // --- MODAL & IDŐGÉP (Változatlan a korábbihoz képest) ---
         window.openNote = (id) => {
             currentNoteId = id;
             document.getElementById('history-banner').classList.add('hidden');
