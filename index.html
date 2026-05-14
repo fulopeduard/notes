@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Dark Notes - Firebase</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --card-bg: #2d2e30;
+            --text-main: #e8eaed;
+            --text-muted: #9aa0a6;
+            --border-color: #3c4043;
+            --accent-color: #8ab4f8; /* Modern kék */
+            --warning-color: #fbbc04;
+            --danger-color: #f28b82;
+            --success-color: #81c995;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        /* --- Auth & Layout --- */
+        #auth-container, #app-container { transition: opacity 0.3s; }
+
+        #auth-container {
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+        }
+
+        .auth-card {
+            background: var(--surface-color); padding: 40px; border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 380px; text-align: center;
+        }
+
+        input, textarea {
+            background: #303134; border: 1px solid var(--border-color); color: white;
+            padding: 12px; border-radius: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; border: none;
+        }
+
+        .primary-btn { background: var(--accent-color); color: #000; padding: 12px; width: 100%; }
+        .primary-btn:hover { background: #aecbfa; }
+
+        /* --- App Header & Notifications --- */
+        header {
+            background-color: var(--surface-color); padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;
+        }
+
+        .notification-area {
+            max-width: 600px; margin: 20px auto;
+        }
+
+        .invite-card {
+            background: #3c4043; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--warning-color);
+        }
+
+        .invite-btns button { padding: 5px 10px; margin-left: 5px; font-size: 12px; }
+
+        /* --- Notes Grid --- */
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        .note-creator {
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 15px; max-width: 500px; margin: 0 auto 30px auto;
+        }
+
+        .notes-grid { column-count: 3; column-gap: 15px; }
+        @media (max-width: 800px) { .notes-grid { column-count: 2; } }
+        @media (max-width: 500px) { .notes-grid { column-count: 1; } }
+
+        .note-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 16px; margin-bottom: 15px; break-inside: avoid;
+            position: relative; transition: transform 0.2s;
+        }
+        .note-card:hover { transform: translateY(-2px); }
+
+        .note-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; outline: none; }
+        .note-content { font-size: 0.95rem; line-height: 1.4; outline: none; white-space: pre-wrap; }
+
+        .card-actions {
+            margin-top: 15px; display: flex; gap: 10px; border-top: 1px solid #444; padding-top: 10px;
+        }
+
+        .icon-btn {
+            background: none; color: var(--text-muted); font-size: 18px; padding: 5px;
+        }
+        .icon-btn:hover { color: var(--accent-color); }
+
+        .badge {
+            font-size: 10px; background: #444; padding: 2px 6px; border-radius: 4px; color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <div class="auth-card">
+            <h2 style="color: var(--accent-color)">Modern Notes</h2>
+            <p id="auth-error" style="color: var(--danger-color); display:none; font-size: 13px;"></p>
+            <input type="email" id="email-input" placeholder="Email">
+            <input type="password" id="password-input" placeholder="Jelszó (min. 6 karakter)">
+            <button class="primary-btn" id="login-btn">Bejelentkezés</button>
+            <button style="background:none; color: var(--text-muted); margin-top:10px" id="reg-btn">Regisztráció</button>
+        </div>
+    </div>
+
+    <div id="app-container" style="display:none">
+        <header>
+            <div style="font-weight:bold; font-size: 20px;">📝 <span style="color:var(--accent-color)">Cloud</span>Keep</div>
+            <div style="display:flex; align-items:center; gap:15px">
+                <span id="user-mail" style="font-size: 13px; color: var(--text-muted)"></span>
+                <button onclick="logout()" class="icon-btn" title="Kijelentkezés">Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <div id="invites-container" class="notification-area"></div>
+
+            <div class="note-creator">
+                <input type="text" id="new-title" placeholder="Cím" style="background:transparent; border:none; padding:0; font-weight:bold">
+                <textarea id="new-content" placeholder="Jegyzet írása..." style="background:transparent; border:none; padding:0; margin-top:10px"></textarea>
+                <div style="text-align:right">
+                    <button id="save-note" class="primary-btn" style="width:auto; padding: 8px 20px">Mentés</button>
+                </div>
+            </div>
+
+            <div class="notes-grid" id="notes-grid"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, orderBy, arrayUnion, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6Z9C3NiC491lYPYPctMejW-z77hm7YLM",
+            authDomain: "notes-674e0.firebaseapp.com",
+            projectId: "notes-674e0",
+            storageBucket: "notes-674e0.firebasestorage.app",
+            messagingSenderId: "696594467601",
+            appId: "1:696594467601:web:4a3657ae12079e1a249ab0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let user = null;
+
+        // --- AUTH ---
+        window.logout = () => signOut(auth);
+
+        document.getElementById('login-btn').onclick = () => {
+            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
+                .catch(err => alert("Hiba: " + err.message));
+        };
+
+        document.getElementById('reg-btn').onclick = () => {
+            const email = document.getElementById('email-input').value;
+            if(document.getElementById('password-input').value.length < 6) return alert("Min 6 karakter!");
+            createUserWithEmailAndPassword(auth, email, document.getElementById('password-input').value)
+                .then(async (cred) => {
+                    // Üres felhasználói profil létrehozása a barátoknak
+                    await setDoc(doc(db, "users", email), { friends: [] });
+                })
+                .catch(err => alert("Hiba: " + err.message));
+        };
+
+        onAuthStateChanged(auth, u => {
+            user = u;
+            if (u) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                document.getElementById('user-mail').innerText = u.email;
+                initApp();
+            } else {
+                document.getElementById('auth-container').style.display = 'flex';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        });
+
+        // --- CORE LOGIC ---
+        function initApp() {
+            listenNotes();
+            listenInvites();
+        }
+
+        // Jegyzet mentése
+        document.getElementById('save-note').onclick = async () => {
+            const title = document.getElementById('new-title').value;
+            const content = document.getElementById('new-content').value;
+            if(!title && !content) return;
+
+            await addDoc(collection(db, "notes"), {
+                title, content,
+                owner: user.email,
+                sharedWith: [],
+                pendingUsers: [],
+                createdAt: Date.now()
+            });
+            document.getElementById('new-title').value = '';
+            document.getElementById('new-content').value = '';
+        };
+
+        // Jegyzetek figyelése (Saját + Megosztott)
+        function listenNotes() {
+            const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
+            const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
+
+            onSnapshot(qSaját, renderNotes);
+            onSnapshot(qMegosztott, renderNotes);
+        }
+
+        let allNotes = new Map();
+        function renderNotes(snap) {
+            snap.forEach(d => allNotes.set(d.id, {id: d.id, ...d.data()}));
+            const grid = document.getElementById('notes-grid');
+            grid.innerHTML = '';
+            
+            Array.from(allNotes.values())
+                .sort((a,b) => b.createdAt - a.createdAt)
+                .forEach(note => {
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    card.innerHTML = `
+                        <div class="note-title" contenteditable="true" onblur="updateNote('${note.id}', 'title', this.innerText)">${note.title}</div>
+                        <div class="note-content" contenteditable="true" onblur="updateNote('${note.id}', 'content', this.innerText)">${note.content}</div>
+                        <div class="badge">${note.owner === user.email ? 'Saját' : 'Megosztva tőle: ' + note.owner}</div>
+                        <div class="card-actions">
+                            <button class="icon-btn" onclick="shareNote('${note.id}')" title="Megosztás">👤+</button>
+                            <button class="icon-btn" onclick="deleteNote('${note.id}')" title="Törlés">🗑️</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+        }
+
+        // Megosztás indítása
+        window.shareNote = async (noteId) => {
+            const targetEmail = prompt("Kivel szeretnéd megosztani? (Email cím)");
+            if (!targetEmail || targetEmail === user.email) return;
+
+            // Ellenőrizzük, hogy a célpont barátja-e a küldőnek
+            const targetRef = doc(db, "users", targetEmail);
+            const targetSnap = await getDoc(targetRef);
+            
+            if (targetSnap.exists() && targetSnap.data().friends.includes(user.email)) {
+                // Ha barát, azonnal megosztjuk
+                await updateDoc(doc(db, "notes", noteId), {
+                    sharedWith: arrayUnion(targetEmail)
+                });
+                alert("Sikeresen megosztva (Barátodnak automatikusan megjelent)!");
+            } else {
+                // Ha nem barát, függőbe tesszük
+                await updateDoc(doc(db, "notes", noteId), {
+                    pendingUsers: arrayUnion(targetEmail)
+                });
+                alert("Megosztási kérelem elküldve!");
+            }
+        };
+
+        // Meghívók figyelése
+        function listenInvites() {
+            const q = query(collection(db, "notes"), where("pendingUsers", "array-contains", user.email));
+            onSnapshot(q, snap => {
+                const container = document.getElementById('invites-container');
+                container.innerHTML = '';
+                snap.forEach(d => {
+                    const data = d.data();
+                    const div = document.createElement('div');
+                    div.className = 'invite-card';
+                    div.innerHTML = `
+                        <span><b>${data.owner}</b> megosztott veled egy jegyzetet.</span>
+                        <div class="invite-btns">
+                            <button onclick="acceptInvite('${d.id}', '${data.owner}', true)" style="background:var(--success-color)">Barát + Elfogad</button>
+                            <button onclick="acceptInvite('${d.id}', '${data.owner}', false)" style="background:var(--accent-color)">Csak Elfogad</button>
+                            <button onclick="declineInvite('${d.id}')" style="background:var(--danger-color)">Elutasít</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        window.acceptInvite = async (noteId, ownerEmail, makeFriend) => {
+            const noteRef = doc(db, "notes", noteId);
+            const noteSnap = await getDoc(noteRef);
+            const data = noteSnap.data();
+
+            const newPending = data.pendingUsers.filter(e => e !== user.email);
+            
+            await updateDoc(noteRef, {
+                pendingUsers: newPending,
+                sharedWith: arrayUnion(user.email)
+            });
+
+            if (makeFriend) {
+                await updateDoc(doc(db, "users", user.email), {
+                    friends: arrayUnion(ownerEmail)
+                });
+            }
+        };
+
+        window.declineInvite = async (noteId) => {
+            const noteRef = doc(db, "notes", noteId);
+            const noteSnap = await getDoc(noteRef);
+            const newPending = noteSnap.data().pendingUsers.filter(e => e !== user.email);
+            await updateDoc(noteRef, { pendingUsers: newPending });
+        };
+
+        window.updateNote = async (id, field, val) => {
+            await updateDoc(doc(db, "notes", id), { [field]: val });
+        };
+
+        window.deleteNote = async (id) => {
+            if(confirm("Biztos törlöd?")) await deleteDoc(doc(db, "notes", id));
+        };
+    </script>
+</body>
+</html>
