@@ -13,7 +13,7 @@
             --creator-gradient-end: rgba(0,0,0,0.2);
             
             --surface-color: rgba(30, 30, 34, 0.95);
-            /* Alapértelmezett jegyzetszínek (Legutóbbi kérés alapján) */
+            /* Alapértelmezett jegyzetszínek */
             --card-bg: #ffe359; 
             --card-shared-bg: #bef54a; 
             
@@ -40,21 +40,22 @@
             position: sticky; top: 0; z-index: 100;
         }
 
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .user-email-text { font-size: 13px; color: var(--text-muted); }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .user-email-text { font-size: 13px; color: var(--text-muted); margin-right: 5px; }
 
-        @media (max-width: 650px) {
+        @media (max-width: 750px) {
             .app-title { display: none !important; }
-            .header-right { width: 100%; justify-content: space-between !important; gap: 8px !important; }
-            header { padding: 12px 15px; }
-            .user-email-text { max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .header-right { width: 100%; justify-content: space-between !important; gap: 5px !important; }
+            header { padding: 12px 10px; }
+            .user-email-text { max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0;}
             .header-btn-text { display: none; }
+            .btn { padding: 8px 10px !important; }
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
         /* --- PLUSZ GOMB ÉS LEGÖRDÜLŐ MENÜ --- */
-        .add-note-wrapper { position: relative; text-align: center; margin: 0 auto 30px auto; }
+        .add-note-wrapper { position: relative; text-align: center; margin: 0 auto 30px auto; transition: 0.3s; }
         
         .add-note-btn {
             background: var(--accent-color); color: #000;
@@ -123,13 +124,10 @@
         .note-card .note-link { color: #0a2d5e; font-weight: bold; }
         .note-card .note-link:hover { color: #000; }
 
-        /* --- 3 PONTOS (KEBAB) MENÜ (ÚJ) --- */
-        .note-actions {
-            position: absolute; top: 10px; right: 10px;
-        }
-        .modal-header .note-actions {
-            position: relative; top: 0; right: 0;
-        }
+        /* --- 3 PONTOS (KEBAB) MENÜ --- */
+        .note-actions { position: absolute; top: 10px; right: 10px; }
+        .modal-header .note-actions { position: relative; top: 0; right: 0; }
+        
         .kebab-btn {
             background: transparent; border: none; font-size: 22px; font-weight: bold;
             cursor: pointer; width: 30px; height: 30px; border-radius: 50%;
@@ -139,11 +137,12 @@
         .note-card .kebab-btn { color: var(--text-dark); }
         .modal-header .kebab-btn { color: var(--text-main); padding-bottom: 4px;}
         .kebab-btn:hover { background: rgba(0,0,0,0.1); opacity: 1; }
+        .modal-header .kebab-btn:hover { background: rgba(255,255,255,0.1); }
 
         .action-dropdown {
             position: absolute; top: 100%; right: 0; background: var(--surface-color);
             border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            display: none; flex-direction: column; z-index: 110; min-width: 160px; overflow: hidden;
+            display: none; flex-direction: column; z-index: 110; min-width: 190px; overflow: hidden;
             margin-top: 5px;
         }
         .action-dropdown.show { display: flex; }
@@ -152,7 +151,6 @@
             text-align: left; cursor: pointer; font-size: 14px; transition: background 0.2s;
         }
         .action-dropdown button:hover { background: rgba(255,255,255,0.1); }
-
 
         /* --- MODALOK ÉS EGYÉB --- */
         .modal-overlay {
@@ -224,8 +222,6 @@
         .color-picker-wrapper input[type="color"] {
             width: 100%; height: 45px; border: 1px solid var(--border-color); border-radius: 8px; padding: 0; background: transparent; cursor: pointer;
         }
-        
-        /* Témák Almenü Fejlécek */
         .theme-section-header {
             display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 10px; margin-top: 20px;
         }
@@ -250,6 +246,9 @@
             <div class="app-title" style="font-weight:bold; font-size: 22px;">✨ CloudKeep <span style="color:var(--accent-color)">Pro</span></div>
             <div class="header-right">
                 <span id="user-mail" class="user-email-text"></span>
+                <button id="nav-toggle-btn" onclick="toggleArchiveView()" class="btn" style="background:rgba(255,255,255,0.1); color:white;" title="Archívum">
+                    📦 <span class="header-btn-text">Archívum</span>
+                </button>
                 <button onclick="openFriendsModal()" class="btn" style="background:rgba(255,255,255,0.1); color:white; position: relative;" title="Barátok">
                     👥 <span class="header-btn-text">Barátok</span>
                     <span id="req-badge" class="hidden" style="position: absolute; top:-5px; right:-5px; background:var(--danger-color); color:#000; border-radius:50%; width:18px; height:18px; font-size:11px; display:flex; align-items:center; justify-content:center;">0</span>
@@ -307,7 +306,7 @@
         </div>
     </div>
 
-    <!-- Jegyzet Modal (ÚJ Fejléccel) -->
+    <!-- Jegyzet Modal -->
     <div class="modal-overlay" id="note-modal">
         <div class="modal-content view-mode" id="modal-container">
             <div id="history-banner" class="hidden">
@@ -318,14 +317,8 @@
             <div class="modal-header">
                 <h2 id="modal-title" style="margin:0; outline:none; flex:1;"></h2>
                 <div style="display:flex; align-items:center; gap:5px;">
-                    <div class="note-actions">
-                        <button class="kebab-btn" onclick="toggleNoteMenu(event, 'modal-menu')">⋮</button>
-                        <div class="action-dropdown" id="modal-menu">
-                            <button onclick="enableEditMode(); document.getElementById('modal-menu').classList.remove('show');">✏️ Szerkesztés</button>
-                            <button onclick="openShareModal(currentNoteId, event); document.getElementById('modal-menu').classList.remove('show');">👤+ Megosztás</button>
-                            <button id="modal-delete-btn" onclick="deleteCurrentNote()" style="color:var(--danger-color)">🗑️ Törlés</button>
-                        </div>
-                    </div>
+                    <!-- A Modál saját kebab menüje generálódik ide dinamikusan -->
+                    <div id="modal-action-wrapper"></div>
                     <span class="close-modal" onclick="closeModal('note-modal')">×</span>
                 </div>
             </div>
@@ -340,7 +333,7 @@
             </div>
 
             <div class="modal-footer" style="margin-top:20px; display:flex; justify-content: flex-end; align-items:center;">
-                <!-- Itt már csak a mentés gomb marad szerkesztéskor -->
+                <!-- Csak a mentés gomb marad alul a szerkesztéshez -->
                 <button id="save-edit-btn" class="btn btn-save edit-only" onclick="saveEdit()">Változtatások mentése</button>
             </div>
 
@@ -520,6 +513,8 @@
         let currentNoteId = null;
         let currentShareNoteId = null;
         
+        let isArchiveView = false; // ÚJ: Archívum nézet kapcsolója
+
         let myNotesMap = new Map();
         let sharedNotesMap = new Map();
         let myFriends = [];
@@ -572,7 +567,6 @@
             if (!event.target.matches('.add-note-btn')) {
                 document.getElementById('type-dropdown').classList.remove('show');
             }
-            // Zárja be az összes kebab menüt, ha máshova kattintunk
             if (!event.target.matches('.kebab-btn')) {
                 document.querySelectorAll('.action-dropdown.show').forEach(menu => {
                     menu.classList.remove('show');
@@ -582,11 +576,43 @@
 
         window.toggleNoteMenu = (event, menuId) => {
             event.stopPropagation();
-            // Zárjuk be a többi nyitott menüt
             document.querySelectorAll('.action-dropdown.show').forEach(menu => {
                 if (menu.id !== menuId) menu.classList.remove('show');
             });
             document.getElementById(menuId).classList.toggle('show');
+        };
+
+        // --- ÚJ: ARCHÍVUM NÉZET LOGIKA ---
+        window.toggleArchiveView = () => {
+            isArchiveView = !isArchiveView;
+            const btn = document.getElementById('nav-toggle-btn');
+            
+            if(isArchiveView) {
+                btn.innerHTML = '🏠 <span class="header-btn-text">Főoldal</span>';
+                document.getElementById('add-note-wrapper').classList.add('hidden');
+                hideCreatorPanel();
+            } else {
+                btn.innerHTML = '📦 <span class="header-btn-text">Archívum</span>';
+                document.getElementById('add-note-wrapper').classList.remove('hidden');
+            }
+            renderAllNotes();
+        };
+
+        window.toggleArchiveNote = async (noteId, event) => {
+            if(event) event.stopPropagation();
+            const note = myNotesMap.get(noteId) || sharedNotesMap.get(noteId);
+            const isArchived = note.archivedBy && note.archivedBy.includes(user.email);
+            const noteRef = doc(db, "notes", noteId);
+            
+            if (isArchived) {
+                await updateDoc(noteRef, { archivedBy: arrayRemove(user.email) });
+            } else {
+                await updateDoc(noteRef, { archivedBy: arrayUnion(user.email) });
+            }
+            
+            if(currentNoteId === noteId) {
+                closeModal('note-modal');
+            }
         };
 
         window.toggleDropdown = (event) => {
@@ -1040,6 +1066,8 @@
                 await updateDoc(doc(db, "users", friendEmail), { friends: arrayRemove(user.email) });
             }
         };
+
+        // --- MEGOSZTÁS / TÖRLÉS LOGIKA (EGYESÍTVE) ---
         window.openShareModal = (noteId, event) => {
             if(event) event.stopPropagation(); 
             currentShareNoteId = noteId;
@@ -1052,6 +1080,7 @@
             }
             document.getElementById('share-modal').style.display = 'flex';
         };
+
         window.executeShare = async (targetEmail) => {
             targetEmail = targetEmail.trim();
             if (!targetEmail || targetEmail === user.email) return;
@@ -1066,24 +1095,35 @@
             closeModal('share-modal');
         };
 
-        // --- CÉLKERESZT: KÁRTYA SZERKESZTÉSE ÉS TÖRLÉSE ---
+        window.deleteSpecificNote = async (noteId, event) => {
+            if(event) event.stopPropagation();
+            const note = myNotesMap.get(noteId) || sharedNotesMap.get(noteId);
+            if (!note) return;
+            
+            if (note.owner === user.email) {
+                if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
+                    await deleteDoc(doc(db, "notes", noteId));
+                    if(currentNoteId === noteId) closeModal('note-modal');
+                }
+            } else {
+                if(confirm("A megosztást fogja törölni ezzel a jegyzettel és nem magát a jegyzetet. Biztosan folytatod?")) {
+                    await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayRemove(user.email) });
+                    if(currentNoteId === noteId) closeModal('note-modal');
+                }
+            }
+        };
+
         window.editNoteFromCard = (event, noteId) => {
             event.stopPropagation();
             openNote(noteId);
             enableEditMode();
         };
 
-        window.deleteNoteFromCard = async (event, noteId) => {
-            event.stopPropagation();
-            if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
-                await deleteDoc(doc(db, "notes", noteId));
-            }
-        };
-
         // --- ADATBÁZIS ÉS RENDERELÉS ---
         function initApp() {
             const qSaját = query(collection(db, "notes"), where("owner", "==", user.email));
             const qMegosztott = query(collection(db, "notes"), where("sharedWith", "array-contains", user.email));
+            
             onSnapshot(qSaját, snap => {
                 myNotesMap.clear();
                 snap.forEach(d => myNotesMap.set(d.id, {id: d.id, ...d.data()}));
@@ -1101,18 +1141,29 @@
             grid.innerHTML = '';
             const combined = [...myNotesMap.values(), ...sharedNotesMap.values()].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
             
-            combined.forEach(note => {
+            const filteredNotes = combined.filter(note => {
+                const isArchived = note.archivedBy && note.archivedBy.includes(user.email);
+                return isArchiveView ? isArchived : !isArchived;
+            });
+
+            if (filteredNotes.length === 0) {
+                grid.innerHTML = `<div style="opacity:0.6; padding: 20px; text-align: center; width: 100%; grid-column: 1/-1;">Nincsenek jegyzetek ebben a nézetben.</div>`;
+                return;
+            }
+
+            filteredNotes.forEach(note => {
                 const safeType = note.type || 'text';
                 const safeItems = note.items || [];
                 const safeSharedWith = note.sharedWith || [];
                 const safePending = note.pendingUsers || [];
+                
                 const isOwner = note.owner === user.email;
                 const isShared = !isOwner || safeSharedWith.length > 0 || safePending.length > 0;
+                const isArchived = note.archivedBy && note.archivedBy.includes(user.email);
                 
                 const card = document.createElement('div');
                 card.className = isShared ? 'note-card shared' : 'note-card';
                 card.onclick = (e) => {
-                    // Ha linkre, gombra, vagy a menüre kattintunk, ne nyissa meg a modalt
                     if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.action-dropdown')) return;
                     openNote(note.id);
                 };
@@ -1151,11 +1202,12 @@
                         <div class="action-dropdown" id="menu-${note.id}">
                             <button onclick="editNoteFromCard(event, '${note.id}')">✏️ Szerkesztés</button>
                             <button onclick="openShareModal('${note.id}', event)">👤+ Megosztás</button>
-                            ${isOwner ? `<button onclick="deleteNoteFromCard(event, '${note.id}')" style="color:var(--danger-color)">🗑️ Törlés</button>` : ''}
+                            <button onclick="toggleArchiveNote('${note.id}', event)">${isArchived ? '📤 Visszaállítás' : '📦 Archiválás'}</button>
+                            <button onclick="deleteSpecificNote('${note.id}', event)" style="color:var(--danger-color)">${isOwner ? '🗑️ Törlés' : '🗑️ Megosztás törlése'}</button>
                         </div>
                     </div>
                     ${badgeHtml}
-                    <h3>${note.title || 'Névtelen jegyzet'}</h3>
+                    <h3 style="padding-right: 30px;">${note.title || 'Névtelen jegyzet'}</h3>
                     <div class="preview-content">${previewHtml}</div>
                 `;
                 grid.appendChild(card);
@@ -1168,10 +1220,16 @@
             
             const note = myNotesMap.get(id) || sharedNotesMap.get(id);
             const isOwner = note.owner === user.email;
+            const isArchived = note.archivedBy && note.archivedBy.includes(user.email);
             
-            // Ha nem te vagy a tulajdonos, rejtsük el a törlés gombot a modal menüben is
-            const modalDelBtn = document.getElementById('modal-delete-btn');
-            if (modalDelBtn) modalDelBtn.style.display = isOwner ? 'block' : 'none';
+            // Modál Kebab menüjének dinamikus felépítése
+            const modalMenu = document.getElementById('modal-menu');
+            modalMenu.innerHTML = `
+                <button onclick="enableEditMode(); document.getElementById('modal-menu').classList.remove('show');">✏️ Szerkesztés</button>
+                <button onclick="openShareModal('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">👤+ Megosztás</button>
+                <button onclick="toggleArchiveNote('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">${isArchived ? '📤 Visszaállítás' : '📦 Archiválás'}</button>
+                <button onclick="deleteSpecificNote('${note.id}', event)" style="color:var(--danger-color)">${isOwner ? '🗑️ Törlés' : '🗑️ Megosztás törlése'}</button>
+            `;
 
             renderModalState(note.title, note.type, note.content, note.items, note.history);
             document.getElementById('note-modal').style.display = 'flex';
@@ -1304,13 +1362,6 @@
         window.closeModal = (modalId) => {
             document.getElementById(modalId).style.display = 'none';
             if(modalId === 'note-modal') currentNoteId = null;
-        };
-
-        window.deleteCurrentNote = async () => {
-            if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
-                await deleteDoc(doc(db, "notes", currentNoteId));
-                closeModal('note-modal');
-            }
         };
     </script>
 </body>
