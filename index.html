@@ -126,7 +126,6 @@
 
         /* --- 3 PONTOS (KEBAB) MENÜ --- */
         .note-actions { position: absolute; top: 10px; right: 10px; }
-        .modal-header .note-actions { position: relative; top: 0; right: 0; }
         
         .kebab-btn {
             background: transparent; border: none; font-size: 22px; font-weight: bold;
@@ -306,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Jegyzet Modal -->
+    <!-- Jegyzet Modal (Javított Kebab menüvel) -->
     <div class="modal-overlay" id="note-modal">
         <div class="modal-content view-mode" id="modal-container">
             <div id="history-banner" class="hidden">
@@ -317,8 +316,13 @@
             <div class="modal-header">
                 <h2 id="modal-title" style="margin:0; outline:none; flex:1;"></h2>
                 <div style="display:flex; align-items:center; gap:5px;">
-                    <!-- A Modál saját kebab menüje generálódik ide dinamikusan -->
-                    <div id="modal-action-wrapper"></div>
+                    <!-- Modál saját kebab menüje -->
+                    <div class="note-actions" style="position: relative; top: 0; right: 0;">
+                        <button class="kebab-btn" onclick="toggleNoteMenu(event, 'modal-menu')">⋮</button>
+                        <div class="action-dropdown" id="modal-menu" style="right: 0; min-width: 190px;">
+                            <!-- Dinamikusan töltjük fel JS-ből -->
+                        </div>
+                    </div>
                     <span class="close-modal" onclick="closeModal('note-modal')">×</span>
                 </div>
             </div>
@@ -513,7 +517,7 @@
         let currentNoteId = null;
         let currentShareNoteId = null;
         
-        let isArchiveView = false; // ÚJ: Archívum nézet kapcsolója
+        let isArchiveView = false;
 
         let myNotesMap = new Map();
         let sharedNotesMap = new Map();
@@ -562,7 +566,7 @@
             return temp.innerHTML;
         }
 
-        // Kebab menü logika és globális kattintás figyelő
+        // --- KEBAB MENÜ LOGIKA ÉS GLOÁLIS KATTINTÁS FIGYELŐ ---
         window.onclick = function(event) {
             if (!event.target.matches('.add-note-btn')) {
                 document.getElementById('type-dropdown').classList.remove('show');
@@ -579,10 +583,10 @@
             document.querySelectorAll('.action-dropdown.show').forEach(menu => {
                 if (menu.id !== menuId) menu.classList.remove('show');
             });
-            document.getElementById(menuId).classList.toggle('show');
+            const menuElem = document.getElementById(menuId);
+            if (menuElem) menuElem.classList.toggle('show');
         };
 
-        // --- ÚJ: ARCHÍVUM NÉZET LOGIKA ---
         window.toggleArchiveView = () => {
             isArchiveView = !isArchiveView;
             const btn = document.getElementById('nav-toggle-btn');
@@ -601,6 +605,8 @@
         window.toggleArchiveNote = async (noteId, event) => {
             if(event) event.stopPropagation();
             const note = myNotesMap.get(noteId) || sharedNotesMap.get(noteId);
+            if (!note) return;
+
             const isArchived = note.archivedBy && note.archivedBy.includes(user.email);
             const noteRef = doc(db, "notes", noteId);
             
@@ -613,6 +619,35 @@
             if(currentNoteId === noteId) {
                 closeModal('note-modal');
             }
+        };
+
+        // --- CÉLKERESZT: KÁRTYA SZERKESZTÉSE ÉS TÖRLÉSE ---
+        window.deleteSpecificNote = async (noteId, event) => {
+            if(event) event.stopPropagation();
+            const note = myNotesMap.get(noteId) || sharedNotesMap.get(noteId);
+            if (!note) return;
+            
+            if (note.owner === user.email) {
+                if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
+                    await deleteDoc(doc(db, "notes", noteId));
+                    if(currentNoteId === noteId) closeModal('note-modal');
+                }
+            } else {
+                if(confirm("A megosztást fogja törölni ezzel a jegyzettel és nem magát a jegyzetet. Biztosan folytatod?")) {
+                    await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayRemove(user.email) });
+                    if(currentNoteId === noteId) closeModal('note-modal');
+                }
+            }
+        };
+
+        window.editNoteFromCard = (event, noteId) => {
+            if (event) event.stopPropagation();
+            openNote(noteId);
+            enableEditMode();
+            // Menü bezárása
+            document.querySelectorAll('.action-dropdown.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
         };
 
         window.toggleDropdown = (event) => {
@@ -1066,8 +1101,6 @@
                 await updateDoc(doc(db, "users", friendEmail), { friends: arrayRemove(user.email) });
             }
         };
-
-        // --- MEGOSZTÁS / TÖRLÉS LOGIKA (EGYESÍTVE) ---
         window.openShareModal = (noteId, event) => {
             if(event) event.stopPropagation(); 
             currentShareNoteId = noteId;
@@ -1080,7 +1113,6 @@
             }
             document.getElementById('share-modal').style.display = 'flex';
         };
-
         window.executeShare = async (targetEmail) => {
             targetEmail = targetEmail.trim();
             if (!targetEmail || targetEmail === user.email) return;
@@ -1093,30 +1125,6 @@
                 alert(`Meghívó elküldve neki: ${targetEmail}`);
             }
             closeModal('share-modal');
-        };
-
-        window.deleteSpecificNote = async (noteId, event) => {
-            if(event) event.stopPropagation();
-            const note = myNotesMap.get(noteId) || sharedNotesMap.get(noteId);
-            if (!note) return;
-            
-            if (note.owner === user.email) {
-                if(confirm("Biztosan véglegesen törlöd ezt a jegyzetet?")) {
-                    await deleteDoc(doc(db, "notes", noteId));
-                    if(currentNoteId === noteId) closeModal('note-modal');
-                }
-            } else {
-                if(confirm("A megosztást fogja törölni ezzel a jegyzettel és nem magát a jegyzetet. Biztosan folytatod?")) {
-                    await updateDoc(doc(db, "notes", noteId), { sharedWith: arrayRemove(user.email) });
-                    if(currentNoteId === noteId) closeModal('note-modal');
-                }
-            }
-        };
-
-        window.editNoteFromCard = (event, noteId) => {
-            event.stopPropagation();
-            openNote(noteId);
-            enableEditMode();
         };
 
         // --- ADATBÁZIS ÉS RENDERELÉS ---
@@ -1224,12 +1232,14 @@
             
             // Modál Kebab menüjének dinamikus felépítése
             const modalMenu = document.getElementById('modal-menu');
-            modalMenu.innerHTML = `
-                <button onclick="enableEditMode(); document.getElementById('modal-menu').classList.remove('show');">✏️ Szerkesztés</button>
-                <button onclick="openShareModal('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">👤+ Megosztás</button>
-                <button onclick="toggleArchiveNote('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">${isArchived ? '📤 Visszaállítás' : '📦 Archiválás'}</button>
-                <button onclick="deleteSpecificNote('${note.id}', event)" style="color:var(--danger-color)">${isOwner ? '🗑️ Törlés' : '🗑️ Megosztás törlése'}</button>
-            `;
+            if(modalMenu) {
+                modalMenu.innerHTML = `
+                    <button onclick="enableEditMode(); document.getElementById('modal-menu').classList.remove('show');">✏️ Szerkesztés</button>
+                    <button onclick="openShareModal('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">👤+ Megosztás</button>
+                    <button onclick="toggleArchiveNote('${note.id}', event); document.getElementById('modal-menu').classList.remove('show');">${isArchived ? '📤 Visszaállítás' : '📦 Archiválás'}</button>
+                    <button onclick="deleteSpecificNote('${note.id}', event)" style="color:var(--danger-color)">${isOwner ? '🗑️ Törlés' : '🗑️ Megosztás törlése'}</button>
+                `;
+            }
 
             renderModalState(note.title, note.type, note.content, note.items, note.history);
             document.getElementById('note-modal').style.display = 'flex';
